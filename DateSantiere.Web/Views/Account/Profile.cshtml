@@ -1,0 +1,134 @@
+@model DateSantiere.Models.ApplicationUser
+
+@{
+    ViewData["Title"] = "Profil";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="bi bi-person-circle" style="font-size: 5rem;"></i>
+                    <h5 class="mt-3">@Model.Email</h5>
+                    <p class="text-muted">@(Model.FirstName ?? "") @(Model.LastName ?? "")</p>
+                </div>
+            </div>
+            
+            <div class="list-group mt-3">
+                <a href="#" class="list-group-item list-group-item-action active">
+                    <i class="bi bi-person"></i> Informații Profil
+                </a>
+                <a asp-controller="Dashboard" asp-action="Index" class="list-group-item list-group-item-action">
+                    <i class="bi bi-grid"></i> Dashboard
+                </a>
+                <a href="#" class="list-group-item list-group-item-action">
+                    <i class="bi bi-star"></i> Favorite
+                </a>
+                <a href="#" class="list-group-item list-group-item-action">
+                    <i class="bi bi-search"></i> Căutări Salvate
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Informații Profil</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Prenume:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @(Model.FirstName ?? "Nu este setat")
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Nume:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @(Model.LastName ?? "Nu este setat")
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Email:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @Model.Email
+                            @if (Model.EmailConfirmed)
+                            {
+                                <span class="badge bg-success">Verificat</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning">Neverificat</span>
+                            }
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Companie:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @(Model.Company ?? "Nu este setat")
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>CUI:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @(Model.CUI ?? "Nu este setat")
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Membru din:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @Model.CreatedAt.ToString("dd MMMM yyyy")
+                        </div>
+                    </div>
+                    
+                    @if (!string.IsNullOrEmpty(Model.SubscriptionPlan))
+                    {
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>Plan abonament:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                <span class="badge bg-primary">@Model.SubscriptionPlan</span>
+                                @if (Model.SubscriptionEndDate.HasValue)
+                                {
+                                    <small class="text-muted">
+                                        (valabil până la @Model.SubscriptionEndDate.Value.ToString("dd.MM.yyyy"))
+                                    </small>
+                                }
+                            </div>
+                        </div>
+                    }
+                    
+                    <hr>
+                    
+                    <div class="mt-3">
+                        <button class="btn btn-primary">
+                            <i class="bi bi-pencil"></i> Editează Profil
+                        </button>
+                        <button class="btn btn-outline-secondary">
+                            <i class="bi bi-key"></i> Schimbă Parola
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

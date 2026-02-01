@@ -41,11 +41,11 @@
                                     <i class="bi bi-person-circle"></i> @User.Identity.Name
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">Profil</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile">Profil</a></li>
                                     <li><a class="dropdown-item" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
-                                        <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home")">
+                                        <form method="post" asp-controller="Account" asp-action="Logout">
                                             <button type="submit" class="dropdown-item">Logout</button>
                                         </form>
                                     </li>
@@ -55,12 +55,12 @@
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">
+                                <a class="nav-link" asp-controller="Account" asp-action="Login">
                                     <i class="bi bi-box-arrow-in-right"></i> Login
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">
+                                <a class="nav-link" asp-controller="Account" asp-action="Register">
                                     <i class="bi bi-person-plus"></i> Register
                                 </a>
                             </li>
