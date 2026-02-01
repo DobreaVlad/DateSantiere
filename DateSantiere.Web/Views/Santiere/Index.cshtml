@@ -1,0 +1,120 @@
+@model IEnumerable<DateSantiere.Models.Santier>
+
+@{
+    ViewData["Title"] = "Căutare Șantiere";
+}
+
+<div class="container mt-4">
+    <h1>Caută Șantiere</h1>
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <form asp-action="Index" method="get" class="search-form">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <input type="text" class="form-control" name="search" placeholder="Caută după nume, descriere..." value="@ViewBag.Search">
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" name="judet" id="judetSelect">
+                            <option value="">Toate județele</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" name="categorie" id="categorieSelect">
+                            <option value="">Toate categoriile</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search"></i> Caută
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <p class="text-muted">
+                Găsite <strong>@ViewBag.TotalCount</strong> șantiere
+            </p>
+        </div>
+    </div>
+
+    <div class="row">
+        @foreach (var santier in Model)
+        {
+            <div class="col-md-6 mb-4">
+                <div class="card santier-card">
+                    <div class="card-body">
+                        <h5 class="card-title">@santier.Name</h5>
+                        <p class="card-text text-muted">@(string.IsNullOrEmpty(santier.Description) ? "" : santier.Description.Substring(0, Math.Min(150, santier.Description.Length)) + "...")</p>
+                        
+                        <div class="santier-details">
+                            <p><i class="bi bi-geo-alt"></i> @santier.Judet, @santier.Localitate</p>
+                            <p><i class="bi bi-tag"></i> @santier.Categorie</p>
+                            <p><i class="bi bi-building"></i> @santier.Beneficiar</p>
+                            @if (santier.ValoareEstimata.HasValue)
+                            {
+                                <p><i class="bi bi-cash"></i> @santier.ValoareEstimata.Value.ToString("N0") RON</p>
+                            }
+                        </div>
+                        
+                        <a asp-action="Details" asp-route-id="@santier.Id" class="btn btn-primary btn-sm">
+                            Vezi detalii
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (ViewBag.TotalPages > 1)
+    {
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                {
+                    <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                        <a class="page-link" asp-action="Index" 
+                           asp-route-page="@i"
+                           asp-route-search="@ViewBag.Search"
+                           asp-route-judet="@ViewBag.Judet"
+                           asp-route-categorie="@ViewBag.Categorie">
+                            @i
+                        </a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+</div>
+
+@section Scripts {
+<script>
+    // Load județe
+    fetch('@Url.Action("GetJudete", "Santiere")')
+        .then(response => response.json())
+        .then(judete => {
+            const select = document.getElementById('judetSelect');
+            judete.forEach(judet => {
+                const option = new Option(judet, judet);
+                if (judet === '@ViewBag.Judet') option.selected = true;
+                select.add(option);
+            });
+        });
+
+    // Load categorii
+    fetch('@Url.Action("GetCategorii", "Santiere")')
+        .then(response => response.json())
+        .then(categorii => {
+            const select = document.getElementById('categorieSelect');
+            categorii.forEach(categorie => {
+                const option = new Option(categorie, categorie);
+                if (categorie === '@ViewBag.Categorie') option.selected = true;
+                select.add(option);
+            });
+        });
+</script>
+}

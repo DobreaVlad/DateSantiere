@@ -1,0 +1,24 @@
+@model DateSantiere.Web.Models.ErrorViewModel
+@{
+    ViewData["Title"] = "Error";
+}
+
+<div class="container mt-5">
+    <div class="text-center">
+        <h1 class="text-danger display-1">Eroare</h1>
+        <p class="lead">Ne pare rău, a apărut o eroare.</p>
+        
+        @if (Model.ShowRequestId)
+        {
+            <p>
+                <strong>Request ID:</strong> <code>@Model.RequestId</code>
+            </p>
+        }
+        
+        <div class="mt-4">
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary">
+                <i class="bi bi-house"></i> Înapoi acasă
+            </a>
+        </div>
+    </div>
+</div>

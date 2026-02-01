@@ -1,0 +1,174 @@
+@model DateSantiere.Models.Santier
+
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Acasă</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Santiere" asp-action="Index">Șantiere</a></li>
+            <li class="breadcrumb-item active">@Model.Name</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="card-title">@Model.Name</h1>
+                    
+                    @if (!string.IsNullOrEmpty(Model.Description))
+                    {
+                        <div class="alert alert-info">
+                            <strong>Descriere:</strong> @Model.Description
+                        </div>
+                    }
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h5>Localizare</h5>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-geo-alt text-primary"></i> <strong>Județ:</strong> @Model.Judet</li>
+                                <li><i class="bi bi-pin-map text-primary"></i> <strong>Localitate:</strong> @Model.Localitate</li>
+                                @if (!string.IsNullOrEmpty(Model.Adresa))
+                                {
+                                    <li><i class="bi bi-house text-primary"></i> <strong>Adresă:</strong> @Model.Adresa</li>
+                                }
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Categorizare</h5>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-tag text-primary"></i> <strong>Categorie:</strong> @Model.Categorie</li>
+                                @if (!string.IsNullOrEmpty(Model.Subcategorie))
+                                {
+                                    <li><i class="bi bi-tags text-primary"></i> <strong>Subcategorie:</strong> @Model.Subcategorie</li>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.Status))
+                                {
+                                    <li><i class="bi bi-info-circle text-primary"></i> <strong>Status:</strong> <span class="badge bg-success">@Model.Status</span></li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h5>Beneficiar</h5>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-building text-primary"></i> <strong>Nume:</strong> @Model.Beneficiar</li>
+                                @if (!string.IsNullOrEmpty(Model.BeneficiarCUI))
+                                {
+                                    <li><i class="bi bi-file-text text-primary"></i> <strong>CUI:</strong> @Model.BeneficiarCUI</li>
+                                }
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Contact</h5>
+                            <ul class="list-unstyled">
+                                @if (!string.IsNullOrEmpty(Model.ContactPersoana))
+                                {
+                                    <li><i class="bi bi-person text-primary"></i> <strong>Persoană:</strong> @Model.ContactPersoana</li>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.ContactTelefon))
+                                {
+                                    <li><i class="bi bi-telephone text-primary"></i> <strong>Telefon:</strong> <a href="tel:@Model.ContactTelefon">@Model.ContactTelefon</a></li>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.ContactEmail))
+                                {
+                                    <li><i class="bi bi-envelope text-primary"></i> <strong>Email:</strong> <a href="mailto:@Model.ContactEmail">@Model.ContactEmail</a></li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+
+                    @if (Model.ValoareEstimata.HasValue || Model.DataIncepere.HasValue || Model.DataFinalizare.HasValue)
+                    {
+                        <hr>
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <h5>Detalii Proiect</h5>
+                                <ul class="list-unstyled">
+                                    @if (Model.ValoareEstimata.HasValue)
+                                    {
+                                        <li><i class="bi bi-cash text-primary"></i> <strong>Valoare estimată:</strong> @Model.ValoareEstimata.Value.ToString("N0") RON</li>
+                                    }
+                                    @if (Model.DataIncepere.HasValue)
+                                    {
+                                        <li><i class="bi bi-calendar-check text-primary"></i> <strong>Data începere:</strong> @Model.DataIncepere.Value.ToString("dd.MM.yyyy")</li>
+                                    }
+                                    @if (Model.DataFinalizare.HasValue)
+                                    {
+                                        <li><i class="bi bi-calendar-x text-primary"></i> <strong>Data finalizare:</strong> @Model.DataFinalizare.Value.ToString("dd.MM.yyyy")</li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.Proiectant) || !string.IsNullOrEmpty(Model.Constructor))
+                    {
+                        <hr>
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <h5>Participanți</h5>
+                                <ul class="list-unstyled">
+                                    @if (!string.IsNullOrEmpty(Model.Proiectant))
+                                    {
+                                        <li><i class="bi bi-pencil-square text-primary"></i> <strong>Proiectant:</strong> @Model.Proiectant</li>
+                                    }
+                                    @if (!string.IsNullOrEmpty(Model.Constructor))
+                                    {
+                                        <li><i class="bi bi-hammer text-primary"></i> <strong>Constructor:</strong> @Model.Constructor</li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.Observatii))
+                    {
+                        <hr>
+                        <div class="mt-4">
+                            <h5>Observații</h5>
+                            <p>@Model.Observatii</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Acțiuni</h5>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" onclick="alert('Funcționalitate disponibilă pentru utilizatori autentificați')">
+                            <i class="bi bi-star"></i> Salvează în favorite
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="window.print()">
+                            <i class="bi bi-printer"></i> Printează
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="alert('Funcționalitate în dezvoltare')">
+                            <i class="bi bi-download"></i> Export PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Informații Adiționale</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-calendar-plus text-muted"></i> <small>Adăugat: @Model.CreatedAt.ToString("dd.MM.yyyy")</small></li>
+                        <li><i class="bi bi-calendar-event text-muted"></i> <small>Actualizat: @Model.UpdatedAt.ToString("dd.MM.yyyy")</small></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
