@@ -277,6 +277,17 @@ jobs:
             dotnet tool update --global dotnet-ef --version "8.*" || true
           fi
           ConnectionStrings__DefaultConnection="$APP_CONN" dotnet ef database update
+
+          SQLITE_PATH="/var/www/datesantiere/data/DateSantiere.db"
+          IMPORT_MARK="/var/www/datesantiere/data/mysql_import.done"
+          if [ -f "$SQLITE_PATH" ] && [ ! -f "$IMPORT_MARK" ]; then
+            echo "SQLite found. Importing data into MySQL (one-time)..."
+            dotnet run --project /var/www/datesantiere/DateSantiere.DbImport/DateSantiere.DbImport.csproj -- --sqlite "$SQLITE_PATH" --mysql "$APP_CONN" --truncate --batchSize 500
+            touch "$IMPORT_MARK"
+          else
+            echo "Skipping import (no SQLite DB or already imported)."
+          fi
+
           systemctl restart datesantiere
           echo "MySQL configured for app: host=127.0.0.1 db=$APP_DB_NAME user=$APP_DB_USER"
           EOF
