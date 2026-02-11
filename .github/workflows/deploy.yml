@@ -44,60 +44,60 @@ jobs:
           PHP_FPM_SERVICE="$(basename "$PHP_FPM_SOCK" .sock)"
 
           if [ -f /etc/letsencrypt/live/db.adebisi.ro/fullchain.pem ] && [ -f /etc/letsencrypt/live/db.adebisi.ro/privkey.pem ]; then
-cat >/etc/nginx/sites-available/db.adebisi.ro <<NGINX
-server {
-    listen 80;
-    server_name db.adebisi.ro;
-    return 301 https://\$host\$request_uri;
-}
+          cat >/etc/nginx/sites-available/db.adebisi.ro <<NGINX
+          server {
+              listen 80;
+              server_name db.adebisi.ro;
+              return 301 https://\$host\$request_uri;
+          }
 
-server {
-    listen 443 ssl http2;
-    server_name db.adebisi.ro;
+          server {
+              listen 443 ssl http2;
+              server_name db.adebisi.ro;
 
-    ssl_certificate /etc/letsencrypt/live/db.adebisi.ro/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/db.adebisi.ro/privkey.pem;
+              ssl_certificate /etc/letsencrypt/live/db.adebisi.ro/fullchain.pem;
+              ssl_certificate_key /etc/letsencrypt/live/db.adebisi.ro/privkey.pem;
 
-    root /var/www/adminer;
-    index index.php;
+              root /var/www/adminer;
+              index index.php;
 
-    location / {
-        try_files \$uri \$uri/ /index.php?\$query_string;
-    }
+              location / {
+                  try_files \$uri \$uri/ /index.php?\$query_string;
+              }
 
-    location ~ \.php$ {
-        include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:$PHP_FPM_SOCK;
-    }
+              location ~ \.php$ {
+                  include snippets/fastcgi-php.conf;
+                  fastcgi_pass unix:$PHP_FPM_SOCK;
+              }
 
-    location ~ /\.ht {
-        deny all;
-    }
-}
-NGINX
+              location ~ /\.ht {
+                  deny all;
+              }
+          }
+          NGINX
           else
-cat >/etc/nginx/sites-available/db.adebisi.ro <<NGINX
-server {
-    listen 80;
-    server_name db.adebisi.ro;
+          cat >/etc/nginx/sites-available/db.adebisi.ro <<NGINX
+          server {
+              listen 80;
+              server_name db.adebisi.ro;
 
-    root /var/www/adminer;
-    index index.php;
+              root /var/www/adminer;
+              index index.php;
 
-    location / {
-        try_files \$uri \$uri/ /index.php?\$query_string;
-    }
+              location / {
+                  try_files \$uri \$uri/ /index.php?\$query_string;
+              }
 
-    location ~ \.php$ {
-        include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:$PHP_FPM_SOCK;
-    }
+              location ~ \.php$ {
+                  include snippets/fastcgi-php.conf;
+                  fastcgi_pass unix:$PHP_FPM_SOCK;
+              }
 
-    location ~ /\.ht {
-        deny all;
-    }
-}
-NGINX
+              location ~ /\.ht {
+                  deny all;
+              }
+          }
+          NGINX
             echo "Certificatul pentru db.adebisi.ro nu a fost gasit. Site-ul a ramas pe HTTP."
           fi
 
