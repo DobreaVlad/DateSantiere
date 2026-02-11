@@ -21,18 +21,21 @@ jobs:
           ssh-keyscan -H 89.33.236.171 >> ~/.ssh/known_hosts
 
       - name: Deploy
+        env:
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
         run: |
-          ssh root@89.33.236.171 << 'EOF'
+          # Pass secrets to the remote safely (avoid any bash interpretation of special chars).
+          APP_DB_PASSWORD_B64="$(printf '%s' "$MYSQL_PASSWORD" | base64 -w0)"
+          ssh root@89.33.236.171 "APP_DB_NAME=$(printf %q "$MYSQL_DATABASE") APP_DB_USER=$(printf %q "$MYSQL_USER") APP_DB_PASSWORD_B64=$(printf %q "$APP_DB_PASSWORD_B64") bash -s" << 'EOF'
           set -e
 
-          # Use single quotes so secret contents can't be interpreted by bash (e.g. `$()`, backticks).
-          APP_DB_NAME='${{ secrets.MYSQL_DATABASE }}'
-          APP_DB_USER='${{ secrets.MYSQL_USER }}'
-          APP_DB_PASSWORD='${{ secrets.MYSQL_PASSWORD }}'
-          if [ -z "$APP_DB_NAME" ] || [ -z "$APP_DB_USER" ] || [ -z "$APP_DB_PASSWORD" ]; then
+          if [ -z "${APP_DB_NAME:-}" ] || [ -z "${APP_DB_USER:-}" ] || [ -z "${APP_DB_PASSWORD_B64:-}" ]; then
             echo "Missing required GitHub secrets: MYSQL_DATABASE, MYSQL_USER, MYSQL_PASSWORD."
             exit 1
           fi
+          APP_DB_PASSWORD="$(printf '%s' "$APP_DB_PASSWORD_B64" | base64 -d)"
           APP_CONN="Server=127.0.0.1;Port=3306;Database=$APP_DB_NAME;User=$APP_DB_USER;Password=$APP_DB_PASSWORD;SslMode=None;"
 
           # Ensure Adminer is served by PHP (not as plain text source)
@@ -240,9 +243,14 @@ jobs:
           dotnet publish -c Release -o /var/www/datesantiere/publish
 
           mkdir -p /etc/systemd/system/datesantiere.service.d
+          mkdir -p /etc/datesantiere
+          APP_CONN_ESC="$(printf '%s' "$APP_CONN" | sed 's/\\/\\\\/g; s/\"/\\\"/g')"
+          printf '%s\n' "ConnectionStrings__DefaultConnection=\"$APP_CONN_ESC\"" >/etc/datesantiere/datesantiere.env
+          chmod 600 /etc/datesantiere/datesantiere.env
+
           cat >/etc/systemd/system/datesantiere.service.d/override.conf <<SYSTEMD
           [Service]
-          Environment="ConnectionStrings__DefaultConnection=$APP_CONN"
+          EnvironmentFile=/etc/datesantiere/datesantiere.env
           SYSTEMD
           chmod 600 /etc/systemd/system/datesantiere.service.d/override.conf
           systemctl daemon-reload
