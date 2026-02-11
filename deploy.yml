@@ -102,7 +102,60 @@ jobs:
           fi
 
           if ss -ltnp | grep -qE ':(80|443)\s.*apache2'; then
-            echo "Apache2 is already listening on 80/443. Skipping Nginx reload/restart to avoid outage."
+            echo "Apache2 is listening on 80/443. Configuring Apache vhost for Adminer with PHP-FPM."
+            a2enmod proxy proxy_fcgi setenvif >/dev/null
+            if [ -f /etc/letsencrypt/live/db.adebisi.ro/fullchain.pem ] && [ -f /etc/letsencrypt/live/db.adebisi.ro/privkey.pem ]; then
+              a2enmod ssl >/dev/null
+              cat >/etc/apache2/sites-available/db.adebisi.ro.conf <<APACHE
+          <VirtualHost *:80>
+              ServerName db.adebisi.ro
+              Redirect permanent / https://db.adebisi.ro/
+          </VirtualHost>
+
+          <VirtualHost *:443>
+              ServerName db.adebisi.ro
+              DocumentRoot /var/www/adminer
+
+              SSLEngine on
+              SSLCertificateFile /etc/letsencrypt/live/db.adebisi.ro/fullchain.pem
+              SSLCertificateKeyFile /etc/letsencrypt/live/db.adebisi.ro/privkey.pem
+
+              <Directory /var/www/adminer>
+                  DirectoryIndex index.php
+                  AllowOverride None
+                  Require all granted
+              </Directory>
+
+              <FilesMatch "\.php$">
+                  SetHandler "proxy:unix:$PHP_FPM_SOCK|fcgi://localhost/"
+              </FilesMatch>
+          </VirtualHost>
+          APACHE
+            else
+              cat >/etc/apache2/sites-available/db.adebisi.ro.conf <<APACHE
+          <VirtualHost *:80>
+              ServerName db.adebisi.ro
+              DocumentRoot /var/www/adminer
+
+              <Directory /var/www/adminer>
+                  DirectoryIndex index.php
+                  AllowOverride None
+                  Require all granted
+              </Directory>
+
+              <FilesMatch "\.php$">
+                  SetHandler "proxy:unix:$PHP_FPM_SOCK|fcgi://localhost/"
+              </FilesMatch>
+          </VirtualHost>
+          APACHE
+            fi
+
+            a2ensite db.adebisi.ro.conf >/dev/null
+            apache2ctl configtest
+            systemctl restart "$PHP_FPM_SERVICE"
+            if ! systemctl reload apache2; then
+              systemctl restart apache2
+            fi
             systemctl status apache2 --no-pager -l || true
             ss -ltnp | grep -E ':(80|443)\s' || true
           else
