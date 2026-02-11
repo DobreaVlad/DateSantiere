@@ -25,9 +25,10 @@ jobs:
           ssh root@89.33.236.171 << 'EOF'
           set -e
 
-          APP_DB_NAME="${{ secrets.MYSQL_DATABASE }}"
-          APP_DB_USER="${{ secrets.MYSQL_USER }}"
-          APP_DB_PASSWORD="${{ secrets.MYSQL_PASSWORD }}"
+          # Use single quotes so secret contents can't be interpreted by bash (e.g. `$()`, backticks).
+          APP_DB_NAME='${{ secrets.MYSQL_DATABASE }}'
+          APP_DB_USER='${{ secrets.MYSQL_USER }}'
+          APP_DB_PASSWORD='${{ secrets.MYSQL_PASSWORD }}'
           if [ -z "$APP_DB_NAME" ] || [ -z "$APP_DB_USER" ] || [ -z "$APP_DB_PASSWORD" ]; then
             echo "Missing required GitHub secrets: MYSQL_DATABASE, MYSQL_USER, MYSQL_PASSWORD."
             exit 1
@@ -40,7 +41,9 @@ jobs:
           apt-get install -y nginx php-fpm php-mysql mariadb-server mariadb-client curl
           systemctl enable --now mariadb
 
-          DB_SQL="CREATE DATABASE IF NOT EXISTS \\`$APP_DB_NAME\\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; CREATE USER IF NOT EXISTS '$APP_DB_USER'@'localhost' IDENTIFIED BY '$APP_DB_PASSWORD'; ALTER USER '$APP_DB_USER'@'localhost' IDENTIFIED BY '$APP_DB_PASSWORD'; GRANT ALL PRIVILEGES ON \\`$APP_DB_NAME\\`.* TO '$APP_DB_USER'@'localhost'; FLUSH PRIVILEGES;"
+          # SQL-escape any single quotes in the password.
+          APP_DB_PASSWORD_SQL="$(printf "%s" "$APP_DB_PASSWORD" | sed "s/'/''/g")"
+          DB_SQL="CREATE DATABASE IF NOT EXISTS \\`$APP_DB_NAME\\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; CREATE USER IF NOT EXISTS '$APP_DB_USER'@'localhost' IDENTIFIED BY '$APP_DB_PASSWORD_SQL'; ALTER USER '$APP_DB_USER'@'localhost' IDENTIFIED BY '$APP_DB_PASSWORD_SQL'; GRANT ALL PRIVILEGES ON \\`$APP_DB_NAME\\`.* TO '$APP_DB_USER'@'localhost'; FLUSH PRIVILEGES;"
 
           run_db_sql() {
             # 1) Prefer root via local unix socket (no password) if available.
@@ -249,4 +252,3 @@ jobs:
           systemctl restart datesantiere
           echo "MySQL configured for app: host=127.0.0.1 db=$APP_DB_NAME user=$APP_DB_USER"
           EOF
-
