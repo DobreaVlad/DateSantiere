@@ -205,7 +205,7 @@ jobs:
           systemctl daemon-reload
 
           cd /var/www/datesantiere/DateSantiere.Web
-          dotnet ef database update --connection "$APP_CONN"
+          ConnectionStrings__DefaultConnection="$APP_CONN" dotnet ef database update
           systemctl restart datesantiere
           echo "MySQL configured for app: host=127.0.0.1 db=$MYSQL_DB user=$MYSQL_USER"
           EOF
