@@ -23,6 +23,89 @@ jobs:
       - name: Deploy
         run: |
           ssh root@89.33.236.171 << 'EOF'
+          set -e
+
+          # Ensure Adminer is served by PHP (not as plain text source)
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update -y
+          apt-get install -y nginx php-fpm curl
+
+          mkdir -p /var/www/adminer
+          curl -fsSL -o /var/www/adminer/index.php https://github.com/vrana/adminer/releases/download/v5.4.2/adminer-5.4.2.php
+          chown -R www-data:www-data /var/www/adminer
+          chmod 0755 /var/www/adminer
+          chmod 0644 /var/www/adminer/index.php
+
+          PHP_FPM_SOCK="$(find /run/php -maxdepth 1 -name 'php*-fpm.sock' | sort | tail -n1)"
+          if [ -z "$PHP_FPM_SOCK" ]; then
+            echo "Nu am gasit socket php-fpm in /run/php."
+            exit 1
+          fi
+          PHP_FPM_SERVICE="$(basename "$PHP_FPM_SOCK" .sock)"
+
+          if [ -f /etc/letsencrypt/live/db.adebisi.ro/fullchain.pem ] && [ -f /etc/letsencrypt/live/db.adebisi.ro/privkey.pem ]; then
+            cat >/etc/nginx/sites-available/db.adebisi.ro <<NGINX
+            server {
+                listen 80;
+                server_name db.adebisi.ro;
+                return 301 https://\$host\$request_uri;
+            }
+
+            server {
+                listen 443 ssl http2;
+                server_name db.adebisi.ro;
+
+                ssl_certificate /etc/letsencrypt/live/db.adebisi.ro/fullchain.pem;
+                ssl_certificate_key /etc/letsencrypt/live/db.adebisi.ro/privkey.pem;
+
+                root /var/www/adminer;
+                index index.php;
+
+                location / {
+                    try_files \$uri \$uri/ /index.php?\$query_string;
+                }
+
+                location ~ \.php$ {
+                    include snippets/fastcgi-php.conf;
+                    fastcgi_pass unix:$PHP_FPM_SOCK;
+                }
+
+                location ~ /\.ht {
+                    deny all;
+                }
+            }
+            NGINX
+          else
+            cat >/etc/nginx/sites-available/db.adebisi.ro <<NGINX
+            server {
+                listen 80;
+                server_name db.adebisi.ro;
+
+                root /var/www/adminer;
+                index index.php;
+
+                location / {
+                    try_files \$uri \$uri/ /index.php?\$query_string;
+                }
+
+                location ~ \.php$ {
+                    include snippets/fastcgi-php.conf;
+                    fastcgi_pass unix:$PHP_FPM_SOCK;
+                }
+
+                location ~ /\.ht {
+                    deny all;
+                }
+            }
+            NGINX
+            echo "Certificatul pentru db.adebisi.ro nu a fost gasit. Site-ul a ramas pe HTTP."
+          fi
+
+          ln -sf /etc/nginx/sites-available/db.adebisi.ro /etc/nginx/sites-enabled/db.adebisi.ro
+          nginx -t
+          systemctl reload nginx
+          systemctl restart "$PHP_FPM_SERVICE"
+
           cd /var/www/datesantiere
           git pull
           dotnet publish -c Release -o /var/www/datesantiere/publish
