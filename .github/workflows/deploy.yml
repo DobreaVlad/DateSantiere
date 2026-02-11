@@ -270,6 +270,12 @@ jobs:
           systemctl daemon-reload
 
           cd /var/www/datesantiere/DateSantiere.Web
+          export PATH="$PATH:$HOME/.dotnet/tools"
+          if ! command -v dotnet-ef >/dev/null 2>&1; then
+            dotnet tool install --global dotnet-ef --version "8.*"
+          else
+            dotnet tool update --global dotnet-ef --version "8.*" || true
+          fi
           ConnectionStrings__DefaultConnection="$APP_CONN" dotnet ef database update
           systemctl restart datesantiere
           echo "MySQL configured for app: host=127.0.0.1 db=$APP_DB_NAME user=$APP_DB_USER"
