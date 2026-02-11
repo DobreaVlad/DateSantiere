@@ -13,10 +13,21 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-// Use SQLite for easy local development
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(connectionString, 
-        b => b.MigrationsAssembly("DateSantiere.Web")));
+{
+    // Keep SQLite support for local dev connection strings; use MySQL in production.
+    if (connectionString.Contains("Data Source=", StringComparison.OrdinalIgnoreCase))
+    {
+        options.UseSqlite(connectionString, b => b.MigrationsAssembly("DateSantiere.Web"));
+    }
+    else
+    {
+        options.UseMySql(
+            connectionString,
+            ServerVersion.AutoDetect(connectionString),
+            b => b.MigrationsAssembly("DateSantiere.Web"));
+    }
+});
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 

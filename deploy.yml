@@ -25,10 +25,28 @@ jobs:
           ssh root@89.33.236.171 << 'EOF'
           set -e
 
+          MYSQL_DB="${{ secrets.MYSQL_DATABASE }}"
+          MYSQL_USER="${{ secrets.MYSQL_USER }}"
+          MYSQL_PASSWORD="${{ secrets.MYSQL_PASSWORD }}"
+          if [ -z "$MYSQL_DB" ] || [ -z "$MYSQL_USER" ] || [ -z "$MYSQL_PASSWORD" ]; then
+            echo "Missing required GitHub secrets: MYSQL_DATABASE, MYSQL_USER, MYSQL_PASSWORD."
+            exit 1
+          fi
+          APP_CONN="Server=127.0.0.1;Port=3306;Database=$MYSQL_DB;User=$MYSQL_USER;Password=$MYSQL_PASSWORD;SslMode=None;"
+
           # Ensure Adminer is served by PHP (not as plain text source)
           export DEBIAN_FRONTEND=noninteractive
           apt-get update -y
-          apt-get install -y nginx php-fpm php-mysql curl
+          apt-get install -y nginx php-fpm php-mysql mariadb-server mariadb-client curl
+          systemctl enable --now mariadb
+
+          mysql <<SQL
+          CREATE DATABASE IF NOT EXISTS \`$MYSQL_DB\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+          CREATE USER IF NOT EXISTS '$MYSQL_USER'@'localhost' IDENTIFIED BY '$MYSQL_PASSWORD';
+          ALTER USER '$MYSQL_USER'@'localhost' IDENTIFIED BY '$MYSQL_PASSWORD';
+          GRANT ALL PRIVILEGES ON \`$MYSQL_DB\`.* TO '$MYSQL_USER'@'localhost';
+          FLUSH PRIVILEGES;
+          SQL
 
           mkdir -p /var/www/adminer
           curl -fsSL -o /var/www/adminer/index.php https://github.com/vrana/adminer/releases/download/v5.4.2/adminer-5.4.2.php
@@ -178,5 +196,16 @@ jobs:
           cd /var/www/datesantiere
           git pull
           dotnet publish -c Release -o /var/www/datesantiere/publish
+
+          mkdir -p /etc/systemd/system/datesantiere.service.d
+          cat >/etc/systemd/system/datesantiere.service.d/override.conf <<SYSTEMD
+          [Service]
+          Environment="ConnectionStrings__DefaultConnection=$APP_CONN"
+          SYSTEMD
+          systemctl daemon-reload
+
+          cd /var/www/datesantiere/DateSantiere.Web
+          dotnet ef database update --connection "$APP_CONN"
           systemctl restart datesantiere
+          echo "MySQL configured for app: host=127.0.0.1 db=$MYSQL_DB user=$MYSQL_USER"
           EOF
