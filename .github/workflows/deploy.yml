@@ -26,5 +26,9 @@ jobs:
           cd /var/www/datesantiere
           git pull
           dotnet publish -c Release -o /var/www/datesantiere/publish
+          cd /var/www/datesantiere/DateSantiere.Web
+          dotnet ef database update --connection "Data Source=/var/www/datesantiere/data/DateSantiere.db"
           systemctl restart datesantiere
           EOF
+
+
