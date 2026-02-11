@@ -28,7 +28,7 @@ jobs:
           # Ensure Adminer is served by PHP (not as plain text source)
           export DEBIAN_FRONTEND=noninteractive
           apt-get update -y
-          apt-get install -y nginx php-fpm curl
+          apt-get install -y nginx php-fpm php-mysql curl
 
           mkdir -p /var/www/adminer
           curl -fsSL -o /var/www/adminer/index.php https://github.com/vrana/adminer/releases/download/v5.4.2/adminer-5.4.2.php
