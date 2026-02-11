@@ -48,9 +48,19 @@ jobs:
           apt-get install -y nginx php-fpm php-mysql mariadb-server mariadb-client curl
           systemctl enable --now mariadb
 
+          # Hard fail on unexpected identifier characters to avoid SQL injection and quoting edge cases.
+          if ! printf '%s' "$APP_DB_NAME" | grep -qE '^[A-Za-z0-9_]+$'; then
+            echo "Invalid MYSQL_DATABASE. Use only letters/numbers/underscore."
+            exit 1
+          fi
+          if ! printf '%s' "$APP_DB_USER" | grep -qE '^[A-Za-z0-9_]+$'; then
+            echo "Invalid MYSQL_USER. Use only letters/numbers/underscore."
+            exit 1
+          fi
+
           # SQL-escape any single quotes in the password.
           APP_DB_PASSWORD_SQL="$(printf "%s" "$APP_DB_PASSWORD" | sed "s/'/''/g")"
-          DB_SQL="CREATE DATABASE IF NOT EXISTS \\`$APP_DB_NAME\\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; CREATE USER IF NOT EXISTS '$APP_DB_USER'@'localhost' IDENTIFIED BY '$APP_DB_PASSWORD_SQL'; ALTER USER '$APP_DB_USER'@'localhost' IDENTIFIED BY '$APP_DB_PASSWORD_SQL'; GRANT ALL PRIVILEGES ON \\`$APP_DB_NAME\\`.* TO '$APP_DB_USER'@'localhost'; FLUSH PRIVILEGES;"
+          DB_SQL="CREATE DATABASE IF NOT EXISTS \`$APP_DB_NAME\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; CREATE USER IF NOT EXISTS '$APP_DB_USER'@'localhost' IDENTIFIED BY '$APP_DB_PASSWORD_SQL'; ALTER USER '$APP_DB_USER'@'localhost' IDENTIFIED BY '$APP_DB_PASSWORD_SQL'; GRANT ALL PRIVILEGES ON \`$APP_DB_NAME\`.* TO '$APP_DB_USER'@'localhost'; FLUSH PRIVILEGES;"
 
           run_db_sql() {
             # 1) Prefer root via local unix socket (no password) if available.
