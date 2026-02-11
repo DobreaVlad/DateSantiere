@@ -103,7 +103,7 @@ jobs:
 
           ln -sf /etc/nginx/sites-available/db.adebisi.ro /etc/nginx/sites-enabled/db.adebisi.ro
           nginx -t
-          systemctl reload nginx
+          systemctl restart nginx
           systemctl restart "$PHP_FPM_SERVICE"
 
           cd /var/www/datesantiere
