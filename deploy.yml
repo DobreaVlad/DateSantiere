@@ -150,6 +150,7 @@ jobs:
           APACHE
             fi
 
+            a2dissite db.adebisi.ro-le-ssl.conf >/dev/null 2>&1 || true
             a2ensite db.adebisi.ro.conf >/dev/null
             apache2ctl configtest
             systemctl restart "$PHP_FPM_SERVICE"
