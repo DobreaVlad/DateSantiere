@@ -49,15 +49,53 @@ jobs:
           SQL
           )
 
-          if ! mysql --no-defaults --user=root --protocol=socket --socket=/run/mysqld/mysqld.sock -e "SELECT 1" >/dev/null 2>&1; then
+          run_db_sql() {
+            # 1) Prefer root via local unix socket (no password) if available.
+            if mysql --no-defaults --user=root --protocol=socket --socket=/run/mysqld/mysqld.sock -e "SELECT 1" >/dev/null 2>&1; then
+              mysql --no-defaults --user=root --protocol=socket --socket=/run/mysqld/mysqld.sock -e "$DB_SQL"
+              return 0
+            fi
+
+            # 2) Fallback to debian-sys-maint credentials if present.
             if [ -f /etc/mysql/debian.cnf ]; then
-              mysql --defaults-file=/etc/mysql/debian.cnf -e "$DB_SQL"
-            else
-              echo "Could not authenticate to MariaDB as admin (root socket and debian.cnf both unavailable)."
+              if mysql --no-defaults --defaults-extra-file=/etc/mysql/debian.cnf -e "SELECT 1" >/dev/null 2>&1; then
+                mysql --no-defaults --defaults-extra-file=/etc/mysql/debian.cnf -e "$DB_SQL"
+                return 0
+              fi
+            fi
+
+            return 1
+          }
+
+          if ! run_db_sql; then
+            echo "MariaDB admin auth failed (root socket + debian.cnf). Attempting emergency local reset to unix_socket..."
+            systemctl stop mariadb
+
+            # Start a local-only server that ignores grants; used to re-enable unix_socket for root.
+            nohup mysqld_safe --skip-grant-tables --skip-networking >/tmp/mysqld_safe.log 2>&1 &
+            for i in $(seq 1 30); do
+              [ -S /run/mysqld/mysqld.sock ] && break
+              sleep 1
+            done
+            if [ ! -S /run/mysqld/mysqld.sock ]; then
+              echo "mysqld_safe did not start (no socket)."
+              tail -n 200 /tmp/mysqld_safe.log || true
               exit 1
             fi
-          else
-            mysql --no-defaults --user=root --protocol=socket --socket=/run/mysqld/mysqld.sock -e "$DB_SQL"
+
+            mysql --no-defaults --protocol=socket --socket=/run/mysqld/mysqld.sock <<'SQL'
+            FLUSH PRIVILEGES;
+            ALTER USER 'root'@'localhost' IDENTIFIED VIA unix_socket;
+            FLUSH PRIVILEGES;
+SQL
+
+            mysqladmin --no-defaults --protocol=socket --socket=/run/mysqld/mysqld.sock shutdown >/dev/null 2>&1 || true
+            systemctl start mariadb
+
+            if ! run_db_sql; then
+              echo "MariaDB provisioning still failing after emergency reset."
+              exit 1
+            fi
           fi
 
           mkdir -p /var/www/adminer
@@ -214,6 +252,7 @@ jobs:
           [Service]
           Environment="ConnectionStrings__DefaultConnection=$APP_CONN"
           SYSTEMD
+          chmod 600 /etc/systemd/system/datesantiere.service.d/override.conf
           systemctl daemon-reload
 
           cd /var/www/datesantiere/DateSantiere.Web
