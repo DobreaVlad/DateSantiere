@@ -87,7 +87,7 @@ jobs:
             FLUSH PRIVILEGES;
             ALTER USER 'root'@'localhost' IDENTIFIED VIA unix_socket;
             FLUSH PRIVILEGES;
-SQL
+            SQL
 
             mysqladmin --no-defaults --protocol=socket --socket=/run/mysqld/mysqld.sock shutdown >/dev/null 2>&1 || true
             systemctl start mariadb
