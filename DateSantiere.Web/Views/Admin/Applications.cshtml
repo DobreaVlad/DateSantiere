@@ -1,0 +1,148 @@
+@model List<DateSantiere.Web.Controllers.ApplicationScript>
+
+@{
+    ViewData["Title"] = "Gestionare Aplicații";
+}
+
+<div style="padding: 40px 0; background: #e5e7eb; min-height: calc(100vh - 200px);">
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h1 style="color: #374151; margin: 0;">Aplicații & Scripturi</h1>
+            <div style="display: flex; gap: 10px;">
+                <a href="/admin/hangfire" class="btn" style="background: #f59e0b; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none;">
+                    <i class="bi bi-speedometer"></i> Hangfire Dashboard
+                </a>
+                <a asp-controller="Admin" asp-action="Index" class="btn" style="background: #6b7280; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none;">
+                    <i class="bi bi-arrow-left"></i> Înapoi la Admin
+                </a>
+            </div>
+        </div>
+
+        @if (TempData["Success"] != null)
+        {
+            <div style="padding: 15px; background: #d1fae5; border-left: 4px solid #10b981; border-radius: 8px; margin-bottom: 20px;">
+                <p style="margin: 0; color: #065f46;">@TempData["Success"]</p>
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div style="padding: 15px; background: #fee2e2; border-left: 4px solid #ef4444; border-radius: 8px; margin-bottom: 20px;">
+                <p style="margin: 0; color: #991b1b;">@TempData["Error"]</p>
+            </div>
+        }
+
+        <!-- Info Box -->
+        <div style="background: #dbeafe; border-left: 4px solid #3b82f6; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+            <h5 style="margin: 0 0 10px 0; color: #1e40af;">
+                <i class="bi bi-info-circle"></i> Informații
+            </h5>
+            <p style="margin: 0; color: #1e3a8a; font-size: 14px;">
+                Scripturi disponibile: <strong>@Model.Count</strong><br>
+                <small>Scripturile se găsesc în folderul <code style="background: white; padding: 2px 6px; border-radius: 3px;">/Scripts</code><br>
+                <i class="bi bi-lightning-charge" style="color: #f59e0b;"></i> Scripturile sunt executate în background folosind <strong>Hangfire</strong>. Verifică <a href="/admin/hangfire" style="color: #1e40af; text-decoration: underline;"><strong>Hangfire Dashboard</strong></a> pentru starea joburilor.</small>
+            </p>
+        </div>
+
+        <!-- Scripts List -->
+        <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            @if (Model.Count > 0)
+            {
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead style="background: #f3f4f6; border-bottom: 2px solid #e5e7eb;">
+                            <tr>
+                                <th style="padding: 15px; text-align: left; font-weight: 600; color: #374151; font-size: 14px;">Nume Script</th>
+                                <th style="padding: 15px; text-align: left; font-weight: 600; color: #374151; font-size: 14px;">Tip</th>
+                                <th style="padding: 15px; text-align: left; font-weight: 600; color: #374151; font-size: 14px;">Dimensiune</th>
+                                <th style="padding: 15px; text-align: left; font-weight: 600; color: #374151; font-size: 14px;">Ultima Modificare</th>
+                                <th style="padding: 15px; text-align: center; font-weight: 600; color: #374151; font-size: 14px;">Acțiuni</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var script in Model)
+                            {
+                                <tr style="border-bottom: 1px solid #e5e7eb;">
+                                    <td style="padding: 15px; color: #1f2937; font-weight: 500; font-size: 14px;">
+                                        <i class="bi bi-file-earmark-code" style="color: #8b5cf6; margin-right: 8px;"></i>@script.Name
+                                    </td>
+                                    <td style="padding: 15px; color: #6b7280; font-size: 14px;">
+                                        @if (script.Extension == ".ps1")
+                                        {
+                                            <span style="display: inline-block; padding: 4px 8px; background: #dbeafe; color: #1e40af; border-radius: 4px; font-weight: 500; font-size: 12px;">PowerShell</span>
+                                        }
+                                        else if (script.Extension == ".bat")
+                                        {
+                                            <span style="display: inline-block; padding: 4px 8px; background: #e0e7ff; color: #3730a3; border-radius: 4px; font-weight: 500; font-size: 12px;">Batch</span>
+                                        }
+                                        else if (script.Extension == ".sh")
+                                        {
+                                            <span style="display: inline-block; padding: 4px 8px; background: #dcfce7; color: #166534; border-radius: 4px; font-weight: 500; font-size: 12px;">Bash</span>
+                                        }
+                                    </td>
+                                    <td style="padding: 15px; color: #6b7280; font-size: 14px;">@FormatBytes(script.Size)</td>
+                                    <td style="padding: 15px; color: #6b7280; font-size: 14px;">@script.UpdatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                    <td style="padding: 15px; text-align: center;">
+                                        <form method="post" asp-action="RunScript" asp-route-fileName="@script.FileName" style="display: inline;" 
+                                              onsubmit="return confirm('Ești sigur că vrei să execuți scriptul: ' + '@script.Name' + '?');">
+                                            <button type="submit" style="padding: 6px 12px; background: #10b981; color: white; border: none; border-radius: 6px; text-decoration: none; font-size: 12px; cursor: pointer;">
+                                                <i class="bi bi-play-circle"></i> Execută
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div style="padding: 40px; text-align: center; color: #6b7280;">
+                    <i class="bi bi-inbox" style="font-size: 48px; color: #d1d5db; display: block; margin-bottom: 15px;"></i>
+                    <p style="font-size: 16px; margin: 0;">Nu au fost găsite scripturi.</p>
+                    <p style="font-size: 14px; margin: 10px 0 0 0; color: #9ca3af;">
+                        Adaugă scripturi PowerShell, Batch sau Bash în folderul <code style="background: #f3f4f6; padding: 2px 6px; border-radius: 3px;">/Scripts</code>
+                    </p>
+                </div>
+            }
+        </div>
+
+        <!-- Instructions -->
+        <div style="background: white; border-radius: 12px; padding: 25px; margin-top: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <h4 style="color: #374151; margin-top: 0;">Instrucțiuni:</h4>
+            <ol style="color: #6b7280; line-height: 1.8;">
+                <li>Adaugă scripturile tale în folderul <code style="background: #f3f4f6; padding: 2px 6px; border-radius: 3px;">/Scripts</code></li>
+                <li>Scripturile trebuie să aibă extensia: <code style="background: #f3f4f6; padding: 2px 6px; border-radius: 3px;">.ps1</code>, <code style="background: #f3f4f6; padding: 2px 6px; border-radius: 3px;">.bat</code> sau <code style="background: #f3f4f6; padding: 2px 6px; border-radius: 3px;">.sh</code></li>
+                <li>Apasă butonul "Execută" pentru a rula scriptul</li>
+                <li>Scriptul se execută pe serverul web cu aceeași permisiuni ca aplicația</li>
+                <li><strong>⚠️ Atenție:</strong> Execută doar scripturi de încredere!</li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+@functions {
+    private string FormatBytes(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        double len = bytes;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len = len / 1024;
+        }
+        return $"{len:0.##} {sizes[order]}";
+    }
+}
+
+<style>
+    tr:hover {
+        background: #f9fafb !important;
+    }
+    
+    button:hover {
+        opacity: 0.9;
+    }
+</style>

@@ -17,6 +17,47 @@ namespace DateSantiere.Web.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
 
+            modelBuilder.Entity("DateSantiere.Models.ApiKeySettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Category")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("KeyName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("KeyValue")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ApiKeySettings");
+                });
+
             modelBuilder.Entity("DateSantiere.Models.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
@@ -24,6 +65,13 @@ namespace DateSantiere.Web.Migrations
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("AccountType")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AdminType")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("CUI")
                         .HasColumnType("TEXT");
@@ -37,6 +85,12 @@ namespace DateSantiere.Web.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("CurrentMonthExports")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("CurrentMonthSearches")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -54,11 +108,20 @@ namespace DateSantiere.Web.Migrations
                     b.Property<string>("LastName")
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime>("LastResetDate")
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("MonthlyExportLimit")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MonthlySearchLimit")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
@@ -229,6 +292,137 @@ namespace DateSantiere.Web.Migrations
                     b.ToTable("Newsletters");
                 });
 
+            modelBuilder.Entity("DateSantiere.Models.PaymentPrice", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("AmountCents")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("BillingInterval")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsForSantier")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PaymentPrices");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            AmountCents = 1499,
+                            BillingInterval = "one-time",
+                            Currency = "eur",
+                            IsActive = true,
+                            IsForSantier = true,
+                            Name = "Deblocare Șantier"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            AmountCents = 999,
+                            BillingInterval = "monthly",
+                            Currency = "eur",
+                            IsActive = true,
+                            IsForSantier = false,
+                            Name = "Pro Monthly"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            AmountCents = 9999,
+                            BillingInterval = "annual",
+                            Currency = "eur",
+                            IsActive = true,
+                            IsForSantier = false,
+                            Name = "Pro Annual"
+                        });
+                });
+
+            modelBuilder.Entity("DateSantiere.Models.PaymentRecord", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("Amount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("PriceId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("SantierId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("StripePaymentIntentId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("StripeSessionId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PaymentRecords");
+                });
+
+            modelBuilder.Entity("DateSantiere.Models.PurchasedSantier", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("PurchasedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SantierId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PurchasedSantiere");
+                });
+
             modelBuilder.Entity("DateSantiere.Models.Santier", b =>
                 {
                     b.Property<int>("Id")
@@ -342,6 +536,85 @@ namespace DateSantiere.Web.Migrations
                     b.HasIndex("Status");
 
                     b.ToTable("Santiere");
+                });
+
+            modelBuilder.Entity("DateSantiere.Models.SantierHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Changes")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("IpAddress")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SantierId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("SantierId", "CreatedAt");
+
+                    b.ToTable("SantiereHistory");
+                });
+
+            modelBuilder.Entity("DateSantiere.Models.SantierNote", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("Alarma")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Nota")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SantierId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Alarma");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("SantierId", "UserId");
+
+                    b.ToTable("SantierNotes");
                 });
 
             modelBuilder.Entity("DateSantiere.Models.SavedSearch", b =>
@@ -518,6 +791,44 @@ namespace DateSantiere.Web.Migrations
 
                     b.HasOne("DateSantiere.Models.ApplicationUser", "User")
                         .WithMany("FavoriteSantiere")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Santier");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("DateSantiere.Models.SantierHistory", b =>
+                {
+                    b.HasOne("DateSantiere.Models.Santier", "Santier")
+                        .WithMany()
+                        .HasForeignKey("SantierId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DateSantiere.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Santier");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("DateSantiere.Models.SantierNote", b =>
+                {
+                    b.HasOne("DateSantiere.Models.Santier", "Santier")
+                        .WithMany()
+                        .HasForeignKey("SantierId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DateSantiere.Models.ApplicationUser", "User")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

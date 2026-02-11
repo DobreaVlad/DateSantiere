@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5000:5000"
+    volumes:
+      # Mount codul sursă pentru hot-reload
+      - ./DateSantiere.Web:/app/DateSantiere.Web
+      - ./DateSantiere.Models:/app/DateSantiere.Models
+      - ./DateSantiere.Data:/app/DateSantiere.Data
+      # Exclude bin și obj pentru performanță
+      - /app/DateSantiere.Web/bin
+      - /app/DateSantiere.Web/obj
+      - /app/DateSantiere.Models/bin
+      - /app/DateSantiere.Models/obj
+      - /app/DateSantiere.Data/bin
+      - /app/DateSantiere.Data/obj
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5000
+    stdin_open: true
+    tty: true

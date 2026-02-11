@@ -1,0 +1,86 @@
+@model DateSantiere.Web.Models.AdminReportsViewModel
+
+@{
+    ViewData["Title"] = "Rapoarte";
+}
+
+<div style="padding: 40px 0; background: #e5e7eb; min-height: calc(100vh - 200px);">
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h1 style="color: #374151; margin: 0;">Rapoarte</h1>
+            <a asp-controller="Admin" asp-action="Index" class="btn" style="background: #6b7280; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none;"><i class="bi bi-arrow-left"></i> Înapoi la Admin</a>
+        </div>
+
+        <div style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+            <form method="get" asp-action="Reports" style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" name="search" value="@Model.Search" placeholder="Caută email sau session id..." style="padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; width: 350px;" />
+                @{ 
+                    var sizes = new int[] { 10, 25, 50, 100 };
+                    var sb = new System.Text.StringBuilder();
+                    foreach (var s in sizes)
+                    {
+                        sb.Append("<option value=\"");
+                        sb.Append(s);
+                        sb.Append("\"");
+                        if (Model.PageSize == s) sb.Append(" selected=\"selected\"");
+                        sb.Append(">" + s + "</option>");
+                    }
+                    var optionsHtml = sb.ToString();
+                }
+                <select name="pageSize" style="padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px;">@Html.Raw(optionsHtml)</select>
+                <input type="hidden" name="page" value="1" />
+                <button type="submit" class="btn btn-primary" style="padding: 10px 16px;">Caută</button>
+            </form>
+        </div>
+
+        <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <h3 style="color: #374151;">Tranzacții găsite: @Model.TotalCount</h3>
+
+            <div style="overflow-x: auto; margin-top: 10px;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f3f4f6; border-bottom: 2px solid #e5e7eb;">
+                            <th style="padding: 12px; text-align: left; color: #374151; font-weight: 600;">ID</th>
+                            <th style="padding: 12px; text-align: left; color: #374151; font-weight: 600;">Utilizator</th>
+                            <th style="padding: 12px; text-align: left; color: #374151; font-weight: 600;">Sumă</th>
+                            <th style="padding: 12px; text-align: left; color: #374151; font-weight: 600;">Monedă</th>
+                            <th style="padding: 12px; text-align: left; color: #374151; font-weight: 600;">Status</th>
+                            <th style="padding: 12px; text-align: left; color: #374151; font-weight: 600;">Session</th>
+                            <th style="padding: 12px; text-align: left; color: #374151; font-weight: 600;">Creat</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr style="border-bottom: 1px solid #e5e7eb;">
+                                <td style="padding: 12px; color: #1f2937;">@item.Id</td>
+                                <td style="padding: 12px; color: #1f2937;">@item.UserEmail</td>
+                                <td style="padding: 12px; color: #1f2937;">@(item.Amount / 100.0).ToString("0.00")</td>
+                                <td style="padding: 12px; color: #1f2937; text-transform: uppercase;">@item.Currency</td>
+                                <td style="padding: 12px; color: #1f2937;">@item.Status</td>
+                                <td style="padding: 12px; color: #1f2937;">@item.StripeSessionId</td>
+                                <td style="padding: 12px; color: #6b7280; font-size: 13px;">@item.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+                <div>
+                    <span style="color: #6b7280;">Pagina @Model.Page din @((int)Math.Ceiling((double)Model.TotalCount / Model.PageSize))</span>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    @{ 
+                        var totalPages = (int)Math.Ceiling((double)Model.TotalCount / Model.PageSize);
+                        var prev = Model.Page > 1 ? Model.Page - 1 : 1;
+                        var next = Model.Page < totalPages ? Model.Page + 1 : totalPages;
+                    }
+
+                    <a href="@Url.Action("Reports", new { page = prev, pageSize = Model.PageSize, search = Model.Search })" class="btn btn-outline-secondary">&larr; Prev</a>
+                    <a href="@Url.Action("Reports", new { page = next, pageSize = Model.PageSize, search = Model.Search })" class="btn btn-outline-secondary">Next &rarr;</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

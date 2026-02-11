@@ -1,0 +1,25 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0
+
+WORKDIR /app
+
+# Copiază fișierele de proiect
+COPY DateSantiere.Models/*.csproj ./DateSantiere.Models/
+COPY DateSantiere.Data/*.csproj ./DateSantiere.Data/
+COPY DateSantiere.Web/*.csproj ./DateSantiere.Web/
+
+# Restore dependencies
+RUN dotnet restore DateSantiere.Web/DateSantiere.Web.csproj
+
+# Copiază tot codul sursă
+COPY . .
+
+# Expune portul
+EXPOSE 5000
+
+# Setează variabile de mediu pentru development
+ENV ASPNETCORE_ENVIRONMENT=Development
+ENV ASPNETCORE_URLS=http://+:5000
+
+# Rulează cu watch pentru hot-reload
+WORKDIR /app/DateSantiere.Web
+CMD ["dotnet", "watch", "run", "--no-launch-profile"]

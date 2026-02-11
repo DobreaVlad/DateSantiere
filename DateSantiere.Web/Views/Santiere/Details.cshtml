@@ -4,7 +4,240 @@
     ViewData["Title"] = Model.Name;
 }
 
-<div class="container mt-4">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+    .details-page {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+    
+    .page-header {
+        background: white;
+        border-radius: 6px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+    
+    .page-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+    
+    .status-badge.planificat {
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        color: white;
+    }
+    
+    .status-badge.in-desfasurare {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+    
+    .status-badge.finalizat {
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+        color: white;
+    }
+    
+    .info-card {
+        background: white;
+        border-radius: 6px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        border: none;
+        transition: all 0.3s ease;
+    }
+    
+    .info-card:hover {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .info-card h5 {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 3px solid #f97316;
+        display: inline-block;
+    }
+    
+    .info-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+        padding: 0.5rem;
+        border-radius: 3px;
+        transition: background 0.2s ease;
+    }
+    
+    .info-item:hover {
+        background: #f9fafb;
+    }
+    
+    .info-item i {
+        color: #f97316;
+        font-size: 1.2rem;
+        margin-right: 1rem;
+        margin-top: 0.2rem;
+        min-width: 24px;
+    }
+    
+    .info-item .label {
+        font-weight: 600;
+        color: #6b7280;
+        margin-right: 0.5rem;
+    }
+    
+    .info-item .value {
+        color: #1f2937;
+        flex: 1;
+    }
+    
+    .description-box {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        border-left: 4px solid #f59e0b;
+        padding: 1.5rem;
+        border-radius: 4px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);
+    }
+    
+    .description-box strong {
+        color: #92400e;
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+    
+    .description-box p {
+        color: #78350f;
+        margin: 0;
+        line-height: 1.6;
+    }
+    
+    #detailsMap {
+        width: 100%;
+        height: 400px;
+        border-radius: 6px;
+        border: none;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .action-card {
+        background: white;
+        border-radius: 6px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        position: sticky;
+        top: 2rem;
+    }
+    
+    .action-card .btn {
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .action-card .btn-primary {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+    
+    .action-card .btn-primary:hover {
+        background: #bfdbfe;
+        box-shadow: 0 4px 8px rgba(219, 234, 254, 0.3);
+    }
+    
+    .action-card .btn-danger {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+    
+    .action-card .btn-danger:hover {
+        background: #fecaca;
+        box-shadow: 0 4px 8px rgba(254, 226, 226, 0.3);
+    }
+    
+    .action-card .btn-outline-primary {
+        background: #dbeafe;
+        color: #1e40af;
+        border: none;
+    }
+    
+    .action-card .btn-outline-primary:hover {
+        background: #bfdbfe;
+    }
+    
+    .action-card .btn-outline-info {
+        background: #cffafe;
+        color: #0e7490;
+        border: none;
+    }
+    
+    .action-card .btn-outline-info:hover {
+        background: #a5f3fc;
+    }
+    
+    .action-card .btn-warning {
+        background: #fef3c7;
+        color: #92400e;
+    }
+    
+    .action-card .btn-warning:hover {
+        background: #fde68a;
+        box-shadow: 0 4px 8px rgba(254, 243, 199, 0.3);
+    }
+    
+    .breadcrumb {
+        background: white;
+        padding: 1rem 1.5rem;
+        border-radius: 4px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    
+    .breadcrumb-item a {
+        color: #f97316;
+        text-decoration: none;
+        font-weight: 600;
+    }
+    
+    .breadcrumb-item a:hover {
+        color: #ea580c;
+    }
+    
+    .breadcrumb-item.active {
+        color: #6b7280;
+    }
+    
+    .value-highlight {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #f97316;
+    }
+</style>
+
+<div class="details-page">
+    <div class="container">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Acasă</a></li>
@@ -13,162 +246,318 @@
         </ol>
     </nav>
 
+    <div class="page-header">
+        <h1>@Model.Name</h1>
+        @if (!string.IsNullOrEmpty(Model.Status))
+        {
+            var statusClass = Model.Status.ToLower().Replace(" ", "-");
+            <span class="status-badge @statusClass">@Model.Status</span>
+        }
+
+        @if (ViewBag.LimitReached == true)
+        {
+            <div class="alert alert-warning mt-3">
+                Ai depășit numărul de vizualizări gratuite pentru luna aceasta. <a class="fw-bold" href="@Url.Action("Index","Home")">Abonează-te</a> pentru acces nelimitat.
+            </div>
+        }
+        else if (ViewBag.HasAccess != true)
+        {
+            <div class="alert alert-info mt-3">
+                Unele informații pot fi blocate. Poți <a href="#" class="fw-bold" onclick="document.getElementById('purchaseForm').scrollIntoView();">debloca acest șantier</a> sau <a class="fw-bold" href="@Url.Action("Pricing","Home")">abonează-te</a> pentru acces nelimitat.
+            </div>
+        }
+    </div>
+
     <div class="row">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-body">
-                    <h1 class="card-title">@Model.Name</h1>
-                    
-                    @if (!string.IsNullOrEmpty(Model.Description))
-                    {
-                        <div class="alert alert-info">
-                            <strong>Descriere:</strong> @Model.Description
-                        </div>
-                    }
+        <div class="col-lg-8">
+            @if (!string.IsNullOrEmpty(Model.Description))
+            {
+                <div class="description-box">
+                    <strong>Descriere:</strong>
+                    <p>@Model.Description</p>
+                </div>
+            }
 
-                    <div class="row mt-4">
-                        <div class="col-md-6">
-                            <h5>Localizare</h5>
-                            <ul class="list-unstyled">
-                                <li><i class="bi bi-geo-alt text-primary"></i> <strong>Județ:</strong> @Model.Judet</li>
-                                <li><i class="bi bi-pin-map text-primary"></i> <strong>Localitate:</strong> @Model.Localitate</li>
-                                @if (!string.IsNullOrEmpty(Model.Adresa))
-                                {
-                                    <li><i class="bi bi-house text-primary"></i> <strong>Adresă:</strong> @Model.Adresa</li>
-                                }
-                            </ul>
-                        </div>
-                        <div class="col-md-6">
-                            <h5>Categorizare</h5>
-                            <ul class="list-unstyled">
-                                <li><i class="bi bi-tag text-primary"></i> <strong>Categorie:</strong> @Model.Categorie</li>
-                                @if (!string.IsNullOrEmpty(Model.Subcategorie))
-                                {
-                                    <li><i class="bi bi-tags text-primary"></i> <strong>Subcategorie:</strong> @Model.Subcategorie</li>
-                                }
-                                @if (!string.IsNullOrEmpty(Model.Status))
-                                {
-                                    <li><i class="bi bi-info-circle text-primary"></i> <strong>Status:</strong> <span class="badge bg-success">@Model.Status</span></li>
-                                }
-                            </ul>
+            <div class="info-card">
+                <h5>Localizare</h5>
+                <div class="info-item">
+                    <i class="bi bi-geo-alt"></i>
+                    <div>
+                        <span class="label">Județ:</span>
+                        <span class="value">@Model.Judet</span>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="bi bi-pin-map"></i>
+                    <div>
+                        <span class="label">Localitate:</span>
+                        <span class="value">@Model.Localitate</span>
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.Adresa))
+                {
+                    <div class="info-item">
+                        <i class="bi bi-house"></i>
+                        <div>
+                            <span class="label">Adresă:</span>
+                            <span class="value">@Model.Adresa</span>
                         </div>
                     </div>
+                }
+            </div>
 
-                    <hr>
+            @if (Model.Latitude.HasValue && Model.Longitude.HasValue)
+            {
+                <div class="info-card">
+                    <h5>Hartă Locație</h5>
+                    <div id="detailsMap"></div>
+                    <small class="text-muted">
+                        <i class="bi bi-geo"></i> Coordonate: @Model.Latitude.Value.ToString("F6"), @Model.Longitude.Value.ToString("F6")
+                    </small>
+                </div>
+            }
 
-                    <div class="row mt-4">
-                        <div class="col-md-6">
-                            <h5>Beneficiar</h5>
-                            <ul class="list-unstyled">
-                                <li><i class="bi bi-building text-primary"></i> <strong>Nume:</strong> @Model.Beneficiar</li>
-                                @if (!string.IsNullOrEmpty(Model.BeneficiarCUI))
-                                {
-                                    <li><i class="bi bi-file-text text-primary"></i> <strong>CUI:</strong> @Model.BeneficiarCUI</li>
-                                }
-                            </ul>
-                        </div>
-                        <div class="col-md-6">
-                            <h5>Contact</h5>
-                            <ul class="list-unstyled">
-                                @if (!string.IsNullOrEmpty(Model.ContactPersoana))
-                                {
-                                    <li><i class="bi bi-person text-primary"></i> <strong>Persoană:</strong> @Model.ContactPersoana</li>
-                                }
-                                @if (!string.IsNullOrEmpty(Model.ContactTelefon))
-                                {
-                                    <li><i class="bi bi-telephone text-primary"></i> <strong>Telefon:</strong> <a href="tel:@Model.ContactTelefon">@Model.ContactTelefon</a></li>
-                                }
-                                @if (!string.IsNullOrEmpty(Model.ContactEmail))
-                                {
-                                    <li><i class="bi bi-envelope text-primary"></i> <strong>Email:</strong> <a href="mailto:@Model.ContactEmail">@Model.ContactEmail</a></li>
-                                }
-                            </ul>
+            <div class="info-card">
+                <h5>Categorizare</h5>
+                <div class="info-item">
+                    <i class="bi bi-tag"></i>
+                    <div>
+                        <span class="label">Categorie:</span>
+                        <span class="value">@Model.Categorie</span>
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.Subcategorie))
+                {
+                    <div class="info-item">
+                        <i class="bi bi-tags"></i>
+                        <div>
+                            <span class="label">Subcategorie:</span>
+                            <span class="value">@Model.Subcategorie</span>
                         </div>
                     </div>
+                }
+            </div>
 
-                    @if (Model.ValoareEstimata.HasValue || Model.DataIncepere.HasValue || Model.DataFinalizare.HasValue)
+            <div class="info-card">
+                <h5>Beneficiar & Contact</h5>
+                <div class="info-item">
+                    <i class="bi bi-building"></i>
+                    <div>
+                        <span class="label">Beneficiar:</span>
+                        <span class="value">@Model.Beneficiar</span>
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.BeneficiarCUI))
+                {
+                    <div class="info-item">
+                        <i class="bi bi-file-text"></i>
+                        <div>
+                            <span class="label">CUI:</span>
+                            <span class="value">@Model.BeneficiarCUI</span>
+                        </div>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.ContactPersoana))
+                {
+                    <div class="info-item">
+                        <i class="bi bi-person"></i>
+                        <div>
+                            <span class="label">Persoană contact:</span>
+                            <span class="value">@Model.ContactPersoana</span>
+                        </div>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.ContactTelefon))
+                {
+                    <div class="info-item">
+                        <i class="bi bi-telephone"></i>
+                        <div>
+                            <span class="label">Telefon:</span>
+                            <span class="value"><a href="tel:@Model.ContactTelefon" style="color: #f97316; text-decoration: none;">@Model.ContactTelefon</a></span>
+                        </div>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.ContactEmail))
+                {
+                    <div class="info-item">
+                        <i class="bi bi-envelope"></i>
+                        <div>
+                            <span class="label">Email:</span>
+                            <span class="value"><a href="mailto:@Model.ContactEmail" style="color: #f97316; text-decoration: none;">@Model.ContactEmail</a></span>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            @if (Model.ValoareEstimata.HasValue || Model.DataIncepere.HasValue || Model.DataFinalizare.HasValue)
+            {
+                <div class="info-card">
+                    <h5>Detalii Proiect</h5>
+                    @if (Model.ValoareEstimata.HasValue)
                     {
-                        <hr>
-                        <div class="row mt-4">
-                            <div class="col-md-12">
-                                <h5>Detalii Proiect</h5>
-                                <ul class="list-unstyled">
-                                    @if (Model.ValoareEstimata.HasValue)
-                                    {
-                                        <li><i class="bi bi-cash text-primary"></i> <strong>Valoare estimată:</strong> @Model.ValoareEstimata.Value.ToString("N0") RON</li>
-                                    }
-                                    @if (Model.DataIncepere.HasValue)
-                                    {
-                                        <li><i class="bi bi-calendar-check text-primary"></i> <strong>Data începere:</strong> @Model.DataIncepere.Value.ToString("dd.MM.yyyy")</li>
-                                    }
-                                    @if (Model.DataFinalizare.HasValue)
-                                    {
-                                        <li><i class="bi bi-calendar-x text-primary"></i> <strong>Data finalizare:</strong> @Model.DataFinalizare.Value.ToString("dd.MM.yyyy")</li>
-                                    }
-                                </ul>
+                        <div class="info-item">
+                            <i class="bi bi-cash"></i>
+                            <div>
+                                <span class="label">Valoare estimată:</span>
+                                <span class="value value-highlight">@Model.ValoareEstimata.Value.ToString("N0") RON</span>
                             </div>
                         </div>
                     }
-
-                    @if (!string.IsNullOrEmpty(Model.Proiectant) || !string.IsNullOrEmpty(Model.Constructor))
+                    @if (Model.DataIncepere.HasValue)
                     {
-                        <hr>
-                        <div class="row mt-4">
-                            <div class="col-md-12">
-                                <h5>Participanți</h5>
-                                <ul class="list-unstyled">
-                                    @if (!string.IsNullOrEmpty(Model.Proiectant))
-                                    {
-                                        <li><i class="bi bi-pencil-square text-primary"></i> <strong>Proiectant:</strong> @Model.Proiectant</li>
-                                    }
-                                    @if (!string.IsNullOrEmpty(Model.Constructor))
-                                    {
-                                        <li><i class="bi bi-hammer text-primary"></i> <strong>Constructor:</strong> @Model.Constructor</li>
-                                    }
-                                </ul>
+                        <div class="info-item">
+                            <i class="bi bi-calendar-check"></i>
+                            <div>
+                                <span class="label">Data începere:</span>
+                                <span class="value">@Model.DataIncepere.Value.ToString("dd.MM.yyyy")</span>
                             </div>
                         </div>
                     }
-
-                    @if (!string.IsNullOrEmpty(Model.Observatii))
+                    @if (Model.DataFinalizare.HasValue)
                     {
-                        <hr>
-                        <div class="mt-4">
-                            <h5>Observații</h5>
-                            <p>@Model.Observatii</p>
+                        <div class="info-item">
+                            <i class="bi bi-calendar-x"></i>
+                            <div>
+                                <span class="label">Data finalizare:</span>
+                                <span class="value">@Model.DataFinalizare.Value.ToString("dd.MM.yyyy")</span>
+                            </div>
                         </div>
                     }
                 </div>
-            </div>
+            }
+
+            @if (!string.IsNullOrEmpty(Model.Proiectant) || !string.IsNullOrEmpty(Model.Constructor))
+            {
+                <div class="info-card">
+                    <h5>Participanți</h5>
+                    @if (!string.IsNullOrEmpty(Model.Proiectant))
+                    {
+                        <div class="info-item">
+                            <i class="bi bi-pencil-square"></i>
+                            <div>
+                                <span class="label">Proiectant:</span>
+                                <span class="value">@Model.Proiectant</span>
+                            </div>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Constructor))
+                    {
+                        <div class="info-item">
+                            <i class="bi bi-hammer"></i>
+                            <div>
+                                <span class="label">Constructor:</span>
+                                <span class="value">@Model.Constructor</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(Model.Observatii))
+            {
+                <div class="info-card">
+                    <h5>Observații</h5>
+                    <p style="color: #6b7280; line-height: 1.6;">@Model.Observatii</p>
+                </div>
+            }
         </div>
 
-        <div class="col-md-4">
-            <div class="card mb-3">
-                <div class="card-body">
-                    <h5 class="card-title">Acțiuni</h5>
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-primary" onclick="alert('Funcționalitate disponibilă pentru utilizatori autentificați')">
-                            <i class="bi bi-star"></i> Salvează în favorite
-                        </button>
-                        <button class="btn btn-outline-primary" onclick="window.print()">
-                            <i class="bi bi-printer"></i> Printează
-                        </button>
-                        <button class="btn btn-outline-primary" onclick="alert('Funcționalitate în dezvoltare')">
-                            <i class="bi bi-download"></i> Export PDF
-                        </button>
-                    </div>
+        <div class="col-lg-4">
+            <div class="action-card">
+                <h5 style="margin-bottom: 1.5rem; color: #1f2937; font-weight: 700;">Acțiuni</h5>
+                <div class="d-grid gap-2">
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                            <i class="bi bi-pencil-square"></i> Editează
+                        </a>
+                        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Șterge
+                        </a>
+                        <hr style="margin: 1rem 0; border-color: #e5e7eb;" />
+                    }
+                    <button class="btn btn-outline-primary" onclick="alert('Funcționalitate disponibilă pentru utilizatori autentificați')">
+                        <i class="bi bi-star"></i> Salvează în favorite
+                    </button>
+                    <button class="btn btn-outline-primary" onclick="window.print()">
+                        <i class="bi bi-printer"></i> Printează
+                    </button>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <a asp-controller="Santier" asp-action="CreateNota" asp-route-santierId="@Model.Id" class="btn btn-warning">
+                            <i class="bi bi-sticky"></i> Adaugă notiță
+                        </a>
+
+                        <!-- Purchase Santier (one-time) -->
+                        <form method="post" asp-controller="Payments" asp-action="CreateCheckoutSessionForSantier">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="santierId" value="@Model.Id" />
+                            <input type="hidden" name="amountCents" value="1499" />
+                            <button type="submit" class="btn btn-primary mt-2"><i class="bi bi-lock"></i> Deblochează șantier - 14.99 EUR</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a class="btn btn-primary" href="@Url.Action("Login", "Account")"><i class="bi bi-lock"></i> Autentifică-te pentru a debloca</a>
+                    }
+
+                    <!-- Subscription CTA (monthly) -->
+                    <form method="post" asp-controller="Payments" asp-action="CreateCheckoutSessionForSubscription" class="mt-3">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="priceId" value="price_pro_monthly" />
+                        <button type="submit" class="btn btn-warning"><i class="bi bi-bag"></i> Abonează-te Pro (lunar) - 9.99 EUR</button>
+                    </form>
+
+                    <a asp-controller="Santiere" asp-action="History" asp-route-id="@Model.Id" class="btn btn-outline-info mt-3">
+                        <i class="bi bi-clock-history"></i> Istoric
+                    </a>
+                    <button class="btn btn-outline-primary" onclick="alert('Funcționalitate în dezvoltare')">
+                        <i class="bi bi-download"></i> Export PDF
+                    </button>
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Informații Adiționale</h5>
-                    <ul class="list-unstyled">
-                        <li><i class="bi bi-calendar-plus text-muted"></i> <small>Adăugat: @Model.CreatedAt.ToString("dd.MM.yyyy")</small></li>
-                        <li><i class="bi bi-calendar-event text-muted"></i> <small>Actualizat: @Model.UpdatedAt.ToString("dd.MM.yyyy")</small></li>
-                    </ul>
+            <div class="info-card">
+                <h5>Informații Adiționale</h5>
+                <div class="info-item">
+                    <i class="bi bi-calendar-plus"></i>
+                    <div>
+                        <span class="label">Adăugat:</span>
+                        <span class="value">@Model.CreatedAt.ToString("dd.MM.yyyy")</span>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="bi bi-calendar-event"></i>
+                    <div>
+                        <span class="label">Actualizat:</span>
+                        <span class="value">@Model.UpdatedAt.ToString("dd.MM.yyyy")</span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+    </div>
 </div>
+
+@if (Model.Latitude.HasValue && Model.Longitude.HasValue)
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const lat = @Model.Latitude.Value;
+            const lng = @Model.Longitude.Value;
+            const map = L.map('detailsMap').setView([lat, lng], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+            // Add marker with popup
+            const marker = L.marker([lat, lng]).addTo(map);
+            let popupHtml = `<div style='min-width: 200px;'>` +
+                `<strong>${@Html.Raw(Json.Serialize(Model.Name))}</strong><br/>` +
+                (@Model.Localitate != null && @Model.Localitate != "" ? `<span>${@Html.Raw(Json.Serialize(Model.Localitate))}</span><br/>` : "") +
+                `<small style='color: #6b7280;'><i class='bi bi-geo'></i> ${lat.toFixed(6)}, ${lng.toFixed(6)}</small>` +
+                `</div>`;
+            marker.bindPopup(popupHtml).openPopup();
+        });
+    </script>
+}

@@ -1,0 +1,40 @@
+@model IEnumerable<DateSantiere.Models.PaymentPrice>
+@{
+    ViewData["Title"] = "Prices";
+}
+
+<h2>Prices</h2>
+<p><a asp-action="Create" class="btn btn-primary">Create Price</a></p>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Amount (cents)</th>
+            <th>Interval</th>
+            <th>For Santier</th>
+            <th>Active</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach(var p in Model)
+    {
+        <tr>
+            <td>@p.Id</td>
+            <td>@p.Name</td>
+            <td>@p.AmountCents</td>
+            <td>@p.BillingInterval</td>
+            <td>@(p.IsForSantier ? "Yes" : "No")</td>
+            <td>@(p.IsActive ? "Yes" : "No")</td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                <form asp-action="Delete" method="post" style="display:inline;" onsubmit="return confirm('Delete price?');">
+                    <input type="hidden" name="id" value="@p.Id" />
+                    <button class="btn btn-sm btn-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

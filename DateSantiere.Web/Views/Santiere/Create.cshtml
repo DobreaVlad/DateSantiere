@@ -1,0 +1,184 @@
+@model DateSantiere.Models.Santier
+
+@{
+    ViewData["Title"] = "Adaugă Șantier Nou";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h2 class="mb-0">
+                        <i class="bi bi-plus-circle"></i> Adaugă Șantier Nou
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Name" class="form-label fw-bold">Nume Șantier *</label>
+                                <input asp-for="Name" class="form-control" required />
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label asp-for="Judet" class="form-label fw-bold">Județ *</label>
+                                <input asp-for="Judet" class="form-control" required />
+                                <span asp-validation-for="Judet" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label asp-for="Localitate" class="form-label fw-bold">Localitate *</label>
+                                <input asp-for="Localitate" class="form-control" required />
+                                <span asp-validation-for="Localitate" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Adresa" class="form-label fw-bold">Adresă *</label>
+                            <input asp-for="Adresa" class="form-control" required />
+                            <span asp-validation-for="Adresa" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="Categorie" class="form-label fw-bold">Categorie *</label>
+                                <select asp-for="Categorie" class="form-select" required>
+                                    <option value="">-- Selectează --</option>
+                                    <option value="Construcții civile">Construcții civile</option>
+                                    <option value="Construcții industriale">Construcții industriale</option>
+                                    <option value="Infrastructură">Infrastructură</option>
+                                    <option value="Lucrări hidrotehnice">Lucrări hidrotehnice</option>
+                                    <option value="Construcții militare">Construcții militare</option>
+                                    <option value="Altele">Altele</option>
+                                </select>
+                                <span asp-validation-for="Categorie" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="Subcategorie" class="form-label fw-bold">Subcategorie</label>
+                                <input asp-for="Subcategorie" class="form-control" />
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="Status" class="form-label fw-bold">Status *</label>
+                                <select asp-for="Status" class="form-select" required>
+                                    <option value="">-- Selectează --</option>
+                                    <option value="În curs">În curs</option>
+                                    <option value="Finalizat">Finalizat</option>
+                                    <option value="Planificat">Planificat</option>
+                                    <option value="Suspendat">Suspendat</option>
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label fw-bold">Descriere</label>
+                            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Beneficiar" class="form-label fw-bold">Beneficiar *</label>
+                                <input asp-for="Beneficiar" class="form-control" required />
+                                <span asp-validation-for="Beneficiar" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="BeneficiarCUI" class="form-label fw-bold">CUI Beneficiar</label>
+                                <input asp-for="BeneficiarCUI" class="form-control" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Constructor" class="form-label fw-bold">Constructor</label>
+                                <input asp-for="Constructor" class="form-control" />
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Proiectant" class="form-label fw-bold">Proiectant</label>
+                                <input asp-for="Proiectant" class="form-control" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="ValoareEstimata" class="form-label fw-bold">Valoare Estimată (RON)</label>
+                                <input asp-for="ValoareEstimata" class="form-control" type="number" step="0.01" />
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="DataIncepere" class="form-label fw-bold">Data Începere</label>
+                                <input asp-for="DataIncepere" class="form-control" type="date" />
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="DataFinalizare" class="form-label fw-bold">Data Finalizare</label>
+                                <input asp-for="DataFinalizare" class="form-control" type="date" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="ContactPersoana" class="form-label fw-bold">Persoană Contact</label>
+                                <input asp-for="ContactPersoana" class="form-control" />
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="ContactTelefon" class="form-label fw-bold">Telefon Contact</label>
+                                <input asp-for="ContactTelefon" class="form-control" type="tel" />
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="ContactEmail" class="form-label fw-bold">Email Contact</label>
+                                <input asp-for="ContactEmail" class="form-control" type="email" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Latitude" class="form-label fw-bold">Latitudine</label>
+                                <input asp-for="Latitude" class="form-control" type="number" step="0.000001" />
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Longitude" class="form-label fw-bold">Longitudine</label>
+                                <input asp-for="Longitude" class="form-control" type="number" step="0.000001" />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Observatii" class="form-label fw-bold">Observații</label>
+                            <textarea asp-for="Observatii" class="form-control" rows="3"></textarea>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input asp-for="IsFeatured" class="form-check-input" type="checkbox" />
+                            <label asp-for="IsFeatured" class="form-check-label">
+                                Evidențiază acest șantier
+                            </label>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Salvează
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Anulează
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

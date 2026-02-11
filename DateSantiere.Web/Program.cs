@@ -1,8 +1,11 @@
 using DateSantiere.Data;
 using DateSantiere.Models;
 using DateSantiere.Web.Models;
+using DateSantiere.Web.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Hangfire;
+using Hangfire.LiteDB;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,8 +20,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
+builder.Services.AddScoped<SantierHistoryService>();
+builder.Services.AddScoped<ScriptExecutionService>();
+
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => {
-    options.SignIn.RequireConfirmedAccount = true;
+    options.SignIn.RequireConfirmedAccount = false;
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;
     options.Password.RequireUppercase = true;
@@ -26,8 +32,19 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => {
     options.Password.RequiredLength = 6;
 })
     .AddRoles<IdentityRole>()
+    .AddClaimsPrincipalFactory<ApplicationUserClaimsPrincipalFactory>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+// Configure Hangfire with LiteDB storage
+// builder.Services.AddHangfire(config => 
+//     config.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+//         .UseSimpleAssemblyNameTypeSerializer()
+//         .UseRecommendedSerializerSettings()
+//         .UseLiteDbStorage());
+
+// builder.Services.AddHangfireServer();
+
+builder.Services.AddHttpClient();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
@@ -68,6 +85,12 @@ app.UseAuthorization();
 
 app.UseSession();
 
+// Configure Hangfire Dashboard
+// app.UseHangfireDashboard("/admin/hangfire", new DashboardOptions
+// {
+//     Authorization = new[] { new HangfireAuthorizationFilter() }
+// });
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
@@ -89,6 +112,9 @@ using (var scope = app.Services.CreateScope())
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         
         await SeedData.Initialize(services, userManager, roleManager);
+        
+        // Seed santiere
+        await DateSantiere.Web.Data.SantiereSeedData.SeedSantiere(context);
     }
     catch (Exception ex)
     {

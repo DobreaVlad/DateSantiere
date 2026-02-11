@@ -1,0 +1,247 @@
+@using DateSantiere.Models
+@model ContactRequest
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+
+@{
+    ViewData["Title"] = "Contact - DateSantiere";
+    var recaptchaSiteKey = Configuration["GoogleRecaptcha:SiteKey"];
+}
+
+<div class="container" style="margin-top: 40px; margin-bottom: 60px;">
+    <div class="contact-page">
+        <h1>Contactează-ne</h1>
+        <p class="contact-subtitle">Suntem aici pentru a te ajuta. Contactează-ne pentru orice întrebări sau solicitări.</p>
+
+        @if (TempData["Message"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["Message"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="contact-content">
+            <div class="contact-info-section">
+                <div class="contact-info-card">
+                    <h3><i class="bi bi-building"></i> Compania</h3>
+                    <p class="info-value">Callinvest SRL</p>
+                </div>
+
+                <div class="contact-info-card">
+                    <h3><i class="bi bi-geo-alt"></i> Adresă</h3>
+                    <p class="info-value">Str. Croitorilor, nr 24<br>Cluj-Napoca</p>
+                </div>
+
+                <div class="contact-info-card">
+                    <h3><i class="bi bi-telephone"></i> Telefon</h3>
+                    <p class="info-value">
+                        <a href="tel:0766183434">0766.183.434</a><br>
+                        <a href="tel:0766183433">0766.183.433</a><br>
+                        <a href="tel:0364141666">0364.141.666</a>
+                    </p>
+                </div>
+
+                <div class="contact-info-card">
+                    <h3><i class="bi bi-envelope"></i> Email</h3>
+                    <p class="info-value">
+                        <a href="mailto:office@datesantiere.ro">office@datesantiere.ro</a><br>
+                        <a href="mailto:marketing@datesantiere.ro">marketing@datesantiere.ro</a>
+                    </p>
+                </div>
+            </div>
+
+            <div class="contact-form-section">
+                <h2>Trimite-ne un mesaj</h2>
+                <form method="post" asp-controller="Home" asp-action="Contact" class="contact-form">
+                    <div class="form-group">
+                        <label asp-for="Company">Nume Firmă</label>
+                        <input asp-for="Company" class="form-control" placeholder="Introduceti numele firmei">
+                        <span asp-validation-for="Company" class="text-danger" style="font-size: 12px;"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Name">Persoană de Contact*</label>
+                        <input asp-for="Name" class="form-control" placeholder="Introduceti persoana de contact" required>
+                        <span asp-validation-for="Name" class="text-danger" style="font-size: 12px;"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Phone">Telefon</label>
+                        <input asp-for="Phone" type="tel" class="form-control" placeholder="Introduceti numarul de telefon">
+                        <span asp-validation-for="Phone" class="text-danger" style="font-size: 12px;"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Email">Email*</label>
+                        <input asp-for="Email" type="email" class="form-control" placeholder="Introduceti adresa de email" required>
+                        <span asp-validation-for="Email" class="text-danger" style="font-size: 12px;"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Message">Mesaj*</label>
+                        <textarea asp-for="Message" rows="5" class="form-control" placeholder="Introduceti mesajul dumneavoastră" required></textarea>
+                        <span asp-validation-for="Message" class="text-danger" style="font-size: 12px;"></span>
+                    </div>
+
+                    <input type="hidden" id="recaptchaToken" name="recaptchaToken" />
+
+                    <button type="submit" class="btn-primary" style="width: 100%; padding: 12px;">Trimite</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .contact-page {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .contact-page h1 {
+        font-size: 36px;
+        color: #374151;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+    .contact-subtitle {
+        font-size: 16px;
+        color: #6b7280;
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .contact-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        margin-top: 40px;
+    }
+
+    .contact-info-section {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .contact-info-card {
+        background: #f9fafb;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .contact-info-card h3 {
+        color: #374151;
+        font-size: 16px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .contact-info-card i {
+        color: #f59e0b;
+        font-size: 20px;
+    }
+
+    .info-value {
+        color: #6b7280;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .info-value a {
+        color: #3b82f6;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    .info-value a:hover {
+        color: #f59e0b;
+    }
+
+    .contact-form-section {
+        background: #f9fafb;
+        padding: 30px;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .contact-form-section h2 {
+        color: #374151;
+        font-size: 22px;
+        margin-bottom: 20px;
+    }
+
+    .contact-form .form-group {
+        margin-bottom: 20px;
+    }
+
+    .contact-form label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #374151;
+        font-size: 14px;
+    }
+
+    .contact-form input.form-control,
+    .contact-form textarea.form-control {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 14px;
+        font-family: inherit;
+        transition: border-color 0.2s;
+    }
+
+    .contact-form input.form-control:focus,
+    .contact-form textarea.form-control:focus {
+        outline: none;
+        border-color: #f59e0b;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+    }
+
+    .text-danger {
+        color: #dc2626;
+    }
+
+    @@media (max-width: 768px) {
+        .contact-content {
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        .contact-page h1 {
+            font-size: 28px;
+        }
+
+        .contact-form-section {
+            padding: 20px;
+        }
+    }
+</style>
+
+<script src="https://www.google.com/recaptcha/api.js?render=@recaptchaSiteKey"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('.contact-form');
+        if (form) {
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                try {
+                    const token = await grecaptcha.execute('@recaptchaSiteKey', { action: 'submit' });
+                    document.getElementById('recaptchaToken').value = token;
+                    form.submit();
+                } catch (error) {
+                    console.error('reCAPTCHA error:', error);
+                    alert('Eroare la validarea reCAPTCHA. Vă rugăm să încercați din nou.');
+                }
+            });
+        }
+    });
+</script>

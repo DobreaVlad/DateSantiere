@@ -1,0 +1,129 @@
+@using DateSantiere.Models
+@model List<ApiKeySettings>
+
+@{
+    ViewData["Title"] = "API Key Settings";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h1 class="h3">
+                <i class="bi bi-gear"></i> API Key Settings
+            </h1>
+        </div>
+        <div class="col-md-6 text-end">
+            <a href="@Url.Action("CreateSetting", "Admin")" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Adaugă Cheie Nouă
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Message"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card">
+        <div class="table-responsive">
+            @if (Model != null && Model.Any())
+            {
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nume Cheie</th>
+                            <th>Categorie</th>
+                            <th>Descriere</th>
+                            <th>Status</th>
+                            <th>Actualizat La</th>
+                            <th>Acțiuni</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var setting in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@setting.KeyName</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">@setting.Category</span>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(setting.Description))
+                                    {
+                                        @setting.Description
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (setting.IsActive)
+                                    {
+                                        <span class="badge bg-success">Activ</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Inactiv</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (setting.UpdatedAt.HasValue)
+                                    {
+                                        @setting.UpdatedAt.Value.ToString("dd.MM.yyyy HH:mm")
+                                    }
+                                    else
+                                    {
+                                        @setting.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+                                    }
+                                </td>
+                                <td>
+                                    <a href="@Url.Action("EditSetting", "Admin", new { id = setting.Id })" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-pencil"></i> Editează
+                                    </a>
+                                    <form method="post" action="@Url.Action("DeleteSetting", "Admin")" style="display: inline;" onsubmit="return confirm('Ești sigur că vrei să ștergi această cheie?');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@setting.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash"></i> Șterge
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="text-center p-5">
+                    <p class="text-muted">Nu au fost găsite chei API configurate.</p>
+                    <a href="@Url.Action("CreateSetting", "Admin")" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Adaugă Prima Cheie
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .badge {
+        font-size: 0.85rem;
+        padding: 0.35rem 0.65rem;
+    }
+
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+</style>

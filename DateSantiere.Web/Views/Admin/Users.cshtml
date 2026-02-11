@@ -1,0 +1,221 @@
+@model List<DateSantiere.Web.Controllers.UserWithRolesViewModel>
+
+@{
+    ViewData["Title"] = "Gestionare Utilizatori";
+    var canManageAdmins = ViewBag.CanManageAdmins as bool? ?? false;
+    var search = ViewBag.Search as string;
+    var accountType = ViewBag.AccountType as string;
+    var adminType = ViewBag.AdminType as string;
+    var isActive = ViewBag.IsActive as bool?;
+}
+
+<div style="padding: 40px 0; background: #e5e7eb; min-height: calc(100vh - 200px);">
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h1 style="color: #374151; margin: 0;">Gestionare Utilizatori</h1>
+            <a asp-controller="Admin" asp-action="Index" class="btn" style="background: #6b7280; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none;">
+                <i class="bi bi-arrow-left"></i> Înapoi la Admin
+            </a>
+        </div>
+        
+        @if (TempData["Success"] != null)
+        {
+            <div style="padding: 15px; background: #d1fae5; border-left: 4px solid #10b981; border-radius: 8px; margin-bottom: 20px;">
+                <p style="margin: 0; color: #065f46;">@TempData["Success"]</p>
+            </div>
+        }
+        
+        @if (TempData["Error"] != null)
+        {
+            <div style="padding: 15px; background: #fee2e2; border-left: 4px solid #ef4444; border-radius: 8px; margin-bottom: 20px;">
+                <p style="margin: 0; color: #991b1b;">@TempData["Error"]</p>
+            </div>
+        }
+        
+        <!-- Search and Filter Section -->
+        <div style="background: white; border-radius: 12px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <form method="get" asp-action="Users" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: end;">
+                <div>
+                    <label style="display: block; color: #374151; font-weight: 600; margin-bottom: 8px; font-size: 14px;">
+                        <i class="bi bi-search"></i> Căutare
+                    </label>
+                    <input type="text" name="search" value="@search" placeholder="Email, nume, companie..." 
+                           style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
+                </div>
+                
+                <div>
+                    <label style="display: block; color: #374151; font-weight: 600; margin-bottom: 8px; font-size: 14px;">
+                        <i class="bi bi-credit-card"></i> Tip Cont
+                    </label>
+                    <select name="accountType" style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
+                        <option value="">Toate</option>
+                        <option value="Free" selected="@(accountType == "Free")">Free</option>
+                        <option value="Basic" selected="@(accountType == "Basic")">Basic</option>
+                        <option value="Premium" selected="@(accountType == "Premium")">Premium</option>
+                        <option value="Enterprise" selected="@(accountType == "Enterprise")">Enterprise</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label style="display: block; color: #374151; font-weight: 600; margin-bottom: 8px; font-size: 14px;">
+                        <i class="bi bi-shield-check"></i> Tip Admin
+                    </label>
+                    <select name="adminType" style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
+                        <option value="">Toate</option>
+                        <option value="None" selected="@(adminType == "None")">Fără admin</option>
+                        <option value="SuperAdmin" selected="@(adminType == "SuperAdmin")">SuperAdmin</option>
+                        <option value="Admin" selected="@(adminType == "Admin")">Admin</option>
+                        <option value="Moderator" selected="@(adminType == "Moderator")">Moderator</option>
+                        <option value="Support" selected="@(adminType == "Support")">Support</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label style="display: block; color: #374151; font-weight: 600; margin-bottom: 8px; font-size: 14px;">
+                        <i class="bi bi-toggle-on"></i> Status
+                    </label>
+                    <select name="isActive" style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
+                        <option value="">Toate</option>
+                        <option value="true" selected="@(isActive == true)">Activ</option>
+                        <option value="false" selected="@(isActive == false)">Inactiv</option>
+                    </select>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" style="flex: 1; padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                        <i class="bi bi-funnel"></i> Filtrează
+                    </button>
+                    <a asp-action="Users" style="flex: 1; padding: 10px 20px; background: #6b7280; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; display: block;">
+                        <i class="bi bi-x-circle"></i> Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+        
+        <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <div style="margin-bottom: 20px;">
+                <h3 style="color: #374151; margin-bottom: 10px;">
+                    <i class="bi bi-people"></i> Utilizatori găsiți: @Model.Count
+                </h3>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f3f4f6; border-bottom: 2px solid #e5e7eb;">
+                            <th style="padding: 12px; text-align: left; color: #374151; font-weight: 600;">Email</th>
+                            <th style="padding: 12px; text-align: left; color: #374151; font-weight: 600;">Nume</th>
+                            <th style="padding: 12px; text-align: left; color: #374151; font-weight: 600;">Companie</th>
+                            <th style="padding: 12px; text-align: left; color: #374151; font-weight: 600;">Tip Cont</th>
+                            <th style="padding: 12px; text-align: left; color: #374151; font-weight: 600;">Tip Admin</th>
+                            <th style="padding: 12px; text-align: left; color: #374151; font-weight: 600;">Status</th>
+                            <th style="padding: 12px; text-align: left; color: #374151; font-weight: 600;">Creat</th>
+                            <th style="padding: 12px; text-align: center; color: #374151; font-weight: 600;">Acțiuni</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            var user = item.User;
+                            var isAdmin = !string.IsNullOrEmpty(user.AdminType);
+                            var badgeClass = user.AccountType switch
+                            {
+                                "Free" => "secondary",
+                                "Basic" => "info",
+                                "Premium" => "warning",
+                                "Enterprise" => "success",
+                                _ => "secondary"
+                            };
+                            
+                            <tr style="border-bottom: 1px solid #e5e7eb;">
+                                <td style="padding: 12px; color: #1f2937;">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <i class="bi bi-person-circle" style="font-size: 24px; color: #6b7280;"></i>
+                                        <div>
+                                            <div style="font-weight: 600;">@user.Email</div>
+                                            @if (user.EmailConfirmed)
+                                            {
+                                                <span style="font-size: 11px; color: #10b981;">
+                                                    <i class="bi bi-check-circle-fill"></i> Verificat
+                                                </span>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="padding: 12px; color: #1f2937;">
+                                    @if (!string.IsNullOrEmpty(user.FirstName) || !string.IsNullOrEmpty(user.LastName))
+                                    {
+                                        <text>@user.FirstName @user.LastName</text>
+                                    }
+                                    else
+                                    {
+                                        <span style="color: #9ca3af;">-</span>
+                                    }
+                                </td>
+                                <td style="padding: 12px; color: #1f2937;">
+                                    @(user.Company ?? "-")
+                                </td>
+                                <td style="padding: 12px;">
+                                    <span class="badge bg-@badgeClass">@user.AccountType</span>
+                                </td>
+                                <td style="padding: 12px;">
+                                    @if (isAdmin)
+                                    {
+                                        <span class="badge bg-danger">@user.AdminType</span>
+                                    }
+                                    else
+                                    {
+                                        <span style="color: #9ca3af;">-</span>
+                                    }
+                                </td>
+                                <td style="padding: 12px;">
+                                    @if (user.IsActive)
+                                    {
+                                        <span style="color: #10b981; font-weight: 600;">
+                                            <i class="bi bi-check-circle"></i> Activ
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span style="color: #ef4444; font-weight: 600;">
+                                            <i class="bi bi-x-circle"></i> Inactiv
+                                        </span>
+                                    }
+                                </td>
+                                <td style="padding: 12px; color: #6b7280; font-size: 13px;">
+                                    @user.CreatedAt.ToString("dd.MM.yyyy")
+                                </td>
+                                <td style="padding: 12px; text-align: center;">
+                                    @if (canManageAdmins || !isAdmin)
+                                    {
+                                        <div style="display: flex; gap: 8px; justify-content: center;">
+                                            <a asp-controller="Admin" asp-action="EditUser" asp-route-id="@user.Id" 
+                                               class="btn btn-sm" style="background: #3b82f6; color: white; text-decoration: none; padding: 6px 12px; border-radius: 6px;">
+                                                <i class="bi bi-pencil"></i> Editează
+                                            </a>
+                                            @if (user.Id != User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)
+                                            {
+                                                <form method="post" asp-controller="Admin" asp-action="DeleteUser" asp-route-id="@user.Id" 
+                                                      style="display: inline;" 
+                                                      onsubmit="return confirm('Sigur vrei să ștergi utilizatorul @user.Email?');">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-sm" style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer;">
+                                                        <i class="bi bi-trash"></i> Șterge
+                                                    </button>
+                                                </form>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span style="color: #9ca3af; font-size: 12px;">Fără permisiuni</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

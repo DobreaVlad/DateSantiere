@@ -1,0 +1,157 @@
+@model DateSantiere.Web.Controllers.EditUserViewModel
+
+@{
+    ViewData["Title"] = "Editare Utilizator";
+    var canManageAdmins = ViewBag.CanManageAdmins as bool? ?? false;
+}
+
+<div style="padding: 40px 0; background: #e5e7eb; min-height: calc(100vh - 200px);">
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h1 style="color: #374151; margin: 0;">Editare Utilizator</h1>
+            <a asp-controller="Admin" asp-action="Users" class="btn" style="background: #6b7280; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none;">
+                <i class="bi bi-arrow-left"></i> Înapoi la Utilizatori
+            </a>
+        </div>
+        
+        <div style="background: white; border-radius: 12px; padding: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); max-width: 800px;">
+            <form method="post" asp-controller="Admin" asp-action="EditUser">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+                
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div style="padding: 15px; background: #fee2e2; border-left: 4px solid #ef4444; border-radius: 8px; margin-bottom: 20px;">
+                        <div asp-validation-summary="All" style="color: #991b1b;"></div>
+                    </div>
+                }
+                
+                <div style="margin-bottom: 20px;">
+                    <h3 style="color: #374151; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #e5e7eb;">
+                        <i class="bi bi-person-badge"></i> Informații Generale
+                    </h3>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 5px; color: #374151; font-weight: 600;">Email</label>
+                        <input type="text" value="@Model.Email" disabled style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; background: #f9fafb; color: #6b7280;" />
+                        <small style="color: #6b7280;">Email-ul nu poate fi modificat</small>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                        <div>
+                            <label asp-for="FirstName" style="display: block; margin-bottom: 5px; color: #374151; font-weight: 600;">Prenume</label>
+                            <input asp-for="FirstName" class="form-control" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;" />
+                        </div>
+                        <div>
+                            <label asp-for="LastName" style="display: block; margin-bottom: 5px; color: #374151; font-weight: 600;">Nume</label>
+                            <input asp-for="LastName" class="form-control" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;" />
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                        <div>
+                            <label asp-for="Company" style="display: block; margin-bottom: 5px; color: #374151; font-weight: 600;">Companie</label>
+                            <input asp-for="Company" class="form-control" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;" />
+                        </div>
+                        <div>
+                            <label asp-for="CUI" style="display: block; margin-bottom: 5px; color: #374151; font-weight: 600;">CUI</label>
+                            <input asp-for="CUI" class="form-control" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;" />
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <h3 style="color: #374151; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #e5e7eb;">
+                        <i class="bi bi-gear"></i> Setări Cont
+                    </h3>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input asp-for="IsActive" type="checkbox" style="width: 20px; height: 20px;" />
+                            <span style="color: #374151; font-weight: 600;">Cont Activ</span>
+                        </label>
+                        <small style="color: #6b7280;">Dezactivează contul pentru a bloca accesul utilizatorului</small>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                        <div>
+                            <label asp-for="AccountType" style="display: block; margin-bottom: 5px; color: #374151; font-weight: 600;">Tip Cont</label>
+                            <select asp-for="AccountType" class="form-control" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;">
+                                <option value="Free">Free</option>
+                                <option value="Basic">Basic</option>
+                                <option value="Premium">Premium</option>
+                                <option value="Enterprise">Enterprise</option>
+                            </select>
+                        </div>
+                        @if (canManageAdmins)
+                        {
+                            <div>
+                                <label asp-for="AdminType" style="display: block; margin-bottom: 5px; color: #374151; font-weight: 600;">Tip Admin</label>
+                                <select asp-for="AdminType" class="form-control" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;">
+                                    <option value="">Fără privilegii admin</option>
+                                    <option value="SuperAdmin">SuperAdmin</option>
+                                    <option value="Admin">Admin</option>
+                                    <option value="Moderator">Moderator</option>
+                                    <option value="Support">Support</option>
+                                </select>
+                            </div>
+                        }
+                        else
+                        {
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; color: #374151; font-weight: 600;">Tip Admin</label>
+                                <input type="text" value="@(Model.AdminType ?? "Fără privilegii")" disabled style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; background: #f9fafb; color: #6b7280;" />
+                                <small style="color: #6b7280;">Doar SuperAdmin poate modifica acest câmp</small>
+                            </div>
+                        }
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 30px;">
+                    <h3 style="color: #374151; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #e5e7eb;">
+                        <i class="bi bi-bar-chart"></i> Limite Utilizare
+                    </h3>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                        <div>
+                            <label asp-for="MonthlySearchLimit" style="display: block; margin-bottom: 5px; color: #374151; font-weight: 600;">
+                                Limită Căutări Lunare
+                            </label>
+                            <input asp-for="MonthlySearchLimit" type="number" class="form-control" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;" />
+                            <small style="color: #6b7280;">Folosește -1 pentru nelimitat</small>
+                        </div>
+                        <div>
+                            <label asp-for="MonthlyExportLimit" style="display: block; margin-bottom: 5px; color: #374151; font-weight: 600;">
+                                Limită Exporturi Lunare
+                            </label>
+                            <input asp-for="MonthlyExportLimit" type="number" class="form-control" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;" />
+                            <small style="color: #6b7280;">Folosește -1 pentru nelimitat</small>
+                        </div>
+                    </div>
+                    
+                    <div style="padding: 15px; background: #f3f4f6; border-radius: 8px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div>
+                                <div style="color: #6b7280; font-size: 13px; margin-bottom: 5px;">Căutări luna curentă</div>
+                                <div style="color: #374151; font-size: 20px; font-weight: 700;">@Model.CurrentMonthSearches</div>
+                            </div>
+                            <div>
+                                <div style="color: #6b7280; font-size: 13px; margin-bottom: 5px;">Exporturi luna curentă</div>
+                                <div style="color: #374151; font-size: 20px; font-weight: 700;">@Model.CurrentMonthExports</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <a asp-controller="Admin" asp-action="Users" class="btn" style="background: #e5e7eb; color: #374151; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                        Anulează
+                    </a>
+                    <button type="submit" class="btn" style="background: #3b82f6; color: white; padding: 12px 24px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer;">
+                        <i class="bi bi-check-circle"></i> Salvează Modificările
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

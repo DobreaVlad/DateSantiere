@@ -1,0 +1,119 @@
+@using DateSantiere.Models
+@model ApiKeySettings
+
+@{
+    var isNew = Model.Id == 0;
+    ViewData["Title"] = isNew ? "Adaugă Cheie API" : "Editează Cheie API";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        @(isNew ? "Adaugă Cheie API Nouă" : "Editează Cheie API")
+                    </h4>
+                </div>
+
+                <div class="card-body">
+                    <form method="post" asp-action="@(isNew ? "CreateSetting" : "EditSetting")" novalidate>
+                        @if (!isNew)
+                        {
+                            <input type="hidden" asp-for="Id" />
+                        }
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="KeyName" class="form-label">Nume Cheie <span class="text-danger">*</span></label>
+                                <input asp-for="KeyName" type="text" class="form-control" placeholder="ex: Google reCAPTCHA Site Key" required>
+                                <div class="invalid-feedback d-block">
+                                    <span asp-validation-for="KeyName"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Category" class="form-label">Categorie <span class="text-danger">*</span></label>
+                                <select asp-for="Category" class="form-select" required>
+                                    <option value="">-- Selectează Categorie --</option>
+                                    <option value="Google">Google</option>
+                                    <option value="Stripe">Stripe</option>
+                                    <option value="Email">Email</option>
+                                    <option value="SMS">SMS</option>
+                                    <option value="Storage">Storage (Cloud)</option>
+                                    <option value="Payment">Payment Gateway</option>
+                                    <option value="Analytics">Analytics</option>
+                                    <option value="Social">Social Media</option>
+                                    <option value="Other">Altele</option>
+                                </select>
+                                <div class="invalid-feedback d-block">
+                                    <span asp-validation-for="Category"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Descriere</label>
+                            <textarea asp-for="Description" class="form-control" rows="2" placeholder="Descriere opțională a acestei chei..."></textarea>
+                            <small class="form-text text-muted">
+                                <i class="bi bi-info-circle"></i> Exemplu: Site Key pentru validare reCAPTCHA pe formularele de contact
+                            </small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="KeyValue" class="form-label">Valoare Cheie <span class="text-danger">*</span></label>
+                            <textarea asp-for="KeyValue" class="form-control font-monospace" rows="6" placeholder="Adaugă valoarea completă a cheii..." required></textarea>
+                            <div class="invalid-feedback d-block">
+                                <span asp-validation-for="KeyValue"></span>
+                            </div>
+                            <small class="form-text text-danger">
+                                <i class="bi bi-exclamation-triangle"></i> Confidențial: Nu expune date sensibile publicului!
+                            </small>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input asp-for="IsActive" type="checkbox" class="form-check-input" id="isActive">
+                                <label class="form-check-label" for="isActive">
+                                    Cheie Activă
+                                </label>
+                            </div>
+                            <small class="form-text text-muted">
+                                Dezactivează dacă această cheie nu trebuie să fie folosită
+                            </small>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> @(isNew ? "Adaugă Cheie" : "Salvează Modificări")
+                            </button>
+                            <a href="@Url.Action("Settings", "Admin")" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Înapoi
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .font-monospace {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.9rem;
+        letter-spacing: 0.5px;
+    }
+
+    .invalid-feedback {
+        color: var(--bs-danger);
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    .form-text.text-danger {
+        display: block;
+        margin-top: 0.5rem;
+        font-size: 0.85rem;
+    }
+</style>

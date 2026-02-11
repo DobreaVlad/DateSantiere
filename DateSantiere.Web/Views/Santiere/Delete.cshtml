@@ -1,0 +1,101 @@
+@model DateSantiere.Models.Santier
+
+@{
+    ViewData["Title"] = "Șterge Șantier";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h2 class="mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> Șterge Șantier
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger">
+                        <h5 class="alert-heading">
+                            <i class="bi bi-exclamation-triangle-fill"></i> Atenție!
+                        </h5>
+                        <p class="mb-0">Ești sigur că vrei să ștergi acest șantier? Această acțiune va dezactiva șantierul din baza de date.</p>
+                    </div>
+
+                    <dl class="row">
+                        <dt class="col-sm-3">Nume</dt>
+                        <dd class="col-sm-9">@Model.Name</dd>
+
+                        <dt class="col-sm-3">Locație</dt>
+                        <dd class="col-sm-9">@Model.Adresa, @Model.Localitate, @Model.Judet</dd>
+
+                        <dt class="col-sm-3">Beneficiar</dt>
+                        <dd class="col-sm-9">@Model.Beneficiar</dd>
+
+                        <dt class="col-sm-3">Categorie</dt>
+                        <dd class="col-sm-9">@Model.Categorie</dd>
+
+                        <dt class="col-sm-3">Status</dt>
+                        <dd class="col-sm-9">
+                            @if (Model.Status == "În curs")
+                            {
+                                <span class="badge bg-success">@Model.Status</span>
+                            }
+                            else if (Model.Status == "Finalizat")
+                            {
+                                <span class="badge bg-primary">@Model.Status</span>
+                            }
+                            else if (Model.Status == "Planificat")
+                            {
+                                <span class="badge bg-info">@Model.Status</span>
+                            }
+                            else if (Model.Status == "Suspendat")
+                            {
+                                <span class="badge bg-warning">@Model.Status</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">@Model.Status</span>
+                            }
+                        </dd>
+
+                        @if (Model.ValoareEstimata.HasValue)
+                        {
+                            <dt class="col-sm-3">Valoare Estimată</dt>
+                            <dd class="col-sm-9">@Model.ValoareEstimata.Value.ToString("N0") RON</dd>
+                        }
+
+                        @if (Model.DataIncepere.HasValue)
+                        {
+                            <dt class="col-sm-3">Data Începere</dt>
+                            <dd class="col-sm-9">@Model.DataIncepere.Value.ToString("dd.MM.yyyy")</dd>
+                        }
+
+                        @if (Model.DataFinalizare.HasValue)
+                        {
+                            <dt class="col-sm-3">Data Finalizare</dt>
+                            <dd class="col-sm-9">@Model.DataFinalizare.Value.ToString("dd.MM.yyyy")</dd>
+                        }
+
+                        <dt class="col-sm-3">Creat la</dt>
+                        <dd class="col-sm-9">@Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</dd>
+
+                        <dt class="col-sm-3">Actualizat la</dt>
+                        <dd class="col-sm-9">@Model.UpdatedAt.ToString("dd.MM.yyyy HH:mm")</dd>
+                    </dl>
+
+                    <form asp-action="Delete" method="post" class="d-inline">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash"></i> Da, șterge
+                            </button>
+                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Nu, anulează
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

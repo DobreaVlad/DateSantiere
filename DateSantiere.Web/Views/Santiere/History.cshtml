@@ -1,0 +1,107 @@
+@model IEnumerable<DateSantiere.Models.SantierHistory>
+
+@{
+    ViewData["Title"] = "Istoric Modificări";
+    var santier = ViewBag.Santier as DateSantiere.Models.Santier;
+}
+
+<div class="container my-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Acasă</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Santiere" asp-action="Index">Șantiere</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Santiere" asp-action="Details" asp-route-id="@santier?.Id">@santier?.Name</a></li>
+            <li class="breadcrumb-item active">Istoric</li>
+        </ol>
+    </nav>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="bi bi-clock-history"></i> Istoric Modificări</h2>
+            <p class="text-muted">Șantier: <strong>@santier?.Name</strong></p>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Nu există înregistrări în istoric pentru acest șantier.
+        </div>
+    }
+    else
+    {
+        <div class="timeline">
+            @foreach (var entry in Model)
+            {
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-2">
+                                <div class="text-center">
+                                    @if (entry.Action == "Created")
+                                    {
+                                        <span class="badge bg-success mb-2" style="font-size: 1rem;">
+                                            <i class="bi bi-plus-circle"></i> Creat
+                                        </span>
+                                    }
+                                    else if (entry.Action == "Updated")
+                                    {
+                                        <span class="badge bg-warning text-dark mb-2" style="font-size: 1rem;">
+                                            <i class="bi bi-pencil"></i> Modificat
+                                        </span>
+                                    }
+                                    else if (entry.Action == "Deleted")
+                                    {
+                                        <span class="badge bg-danger mb-2" style="font-size: 1rem;">
+                                            <i class="bi bi-trash"></i> Șters
+                                        </span>
+                                    }
+                                    <div class="text-muted small">
+                                        <i class="bi bi-calendar"></i> @entry.CreatedAt.ToString("dd.MM.yyyy")
+                                    </div>
+                                    <div class="text-muted small">
+                                        <i class="bi bi-clock"></i> @entry.CreatedAt.ToString("HH:mm:ss")
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-10">
+                                <h5 class="card-title">
+                                    <i class="bi bi-person-circle"></i> @entry.User?.Email
+                                </h5>
+                                @if (!string.IsNullOrEmpty(entry.IpAddress))
+                                {
+                                    <small class="text-muted"><i class="bi bi-globe"></i> IP: @entry.IpAddress</small>
+                                }
+                                <div class="mt-3">
+                                    <strong>Modificări:</strong>
+                                    <pre class="bg-light p-3 mt-2 rounded" style="max-height: 300px; overflow-y: auto;">@entry.Changes</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <div class="mt-4">
+        <a href="@Url.Action("Details", "Santiere", new { id = santier?.Id })" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Înapoi la Șantier
+        </a>
+    </div>
+</div>
+
+<style>
+.timeline {
+    position: relative;
+}
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 95px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #dee2e6;
+}
+</style>

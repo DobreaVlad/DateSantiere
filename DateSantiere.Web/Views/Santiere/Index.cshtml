@@ -4,95 +4,571 @@
     ViewData["Title"] = "Căutare Șantiere";
 }
 
-<div class="container mt-4">
-    <h1>Caută Șantiere</h1>
-    
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <form asp-action="Index" method="get" class="search-form">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <input type="text" class="form-control" name="search" placeholder="Caută după nume, descriere..." value="@ViewBag.Search">
-                    </div>
-                    <div class="col-md-3">
-                        <select class="form-select" name="judet" id="judetSelect">
-                            <option value="">Toate județele</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <select class="form-select" name="categorie" id="categorieSelect">
-                            <option value="">Toate categoriile</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="bi bi-search"></i> Caută
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
+<style>
+    :root {
+        --sant-bg: #f4f7fb;
+        --sant-surface: rgba(255, 255, 255, 0.92);
+        --sant-ink: #0f172a;
+        --sant-muted: #475569;
+        --sant-border: #e2e8f0;
+        --sant-primary: #0f766e;
+        --sant-primary-dark: #0b5f58;
+        --sant-accent: #f59e0b;
+        --sant-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    }
 
-    <div class="row mb-3">
-        <div class="col-md-12">
-            <p class="text-muted">
-                Găsite <strong>@ViewBag.TotalCount</strong> șantiere
-            </p>
+    .santiere-page {
+        background:
+            radial-gradient(900px 400px at 85% -10%, rgba(15, 118, 110, 0.12), transparent 60%),
+            radial-gradient(700px 360px at -10% 10%, rgba(245, 158, 11, 0.12), transparent 55%),
+            linear-gradient(180deg, #f8fafc, #eef2f7 55%, #e9eef5);
+        min-height: calc(100vh - 100px);
+        padding-top: 24px;
+        padding-bottom: 24px;
+    }
+    .santiere-header {
+        background: var(--sant-surface);
+        border: 1px solid var(--sant-border);
+        border-radius: 16px;
+        padding: 18px 20px;
+        box-shadow: var(--sant-shadow);
+        margin-bottom: 18px;
+        backdrop-filter: blur(6px);
+    }
+    .santiere-title {
+        color: var(--sant-ink);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        margin: 0;
+    }
+    .sidebar-filters {
+        background: var(--sant-surface);
+        padding: 18px;
+        border-radius: 14px;
+        height: calc(100vh - 150px);
+        position: sticky;
+        top: 20px;
+        overflow-y: auto;
+        border: 1px solid var(--sant-border);
+        box-shadow: var(--sant-shadow);
+        backdrop-filter: blur(6px);
+    }
+    .sidebar-filters h5 {
+        color: var(--sant-ink);
+        font-weight: 700;
+        margin-bottom: 20px;
+        font-size: 18px;
+    }
+    
+    /* Accordion Styles */
+    .accordion {
+        --bs-accordion-btn-padding-x: 0.75rem;
+        --bs-accordion-btn-padding-y: 0.75rem;
+        --bs-accordion-body-padding-x: 0.75rem;
+        --bs-accordion-body-padding-y: 0.75rem;
+    }
+    .accordion-item {
+        border: 1px solid var(--sant-border);
+        border-radius: 10px !important;
+        margin-bottom: 10px;
+        overflow: hidden;
+    }
+    .accordion-button {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--sant-ink);
+        background-color: #f1f5f9;
+        padding: 0.75rem 0.9rem;
+    }
+    .accordion-button:not(.collapsed) {
+        color: var(--sant-primary);
+        background-color: rgba(15, 118, 110, 0.08);
+        box-shadow: none;
+    }
+    .accordion-button:focus {
+        box-shadow: none;
+        border-color: #e5e7eb;
+    }
+    .accordion-button::after {
+        width: 1rem;
+        height: 1rem;
+        background-size: 1rem;
+    }
+    .accordion-body {
+        padding: 1rem 0.75rem;
+        background: white;
+    }
+    
+    .filter-group {
+        margin-bottom: 12px;
+    }
+    .filter-group:last-child {
+        margin-bottom: 0;
+    }
+    .filter-group label {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--sant-muted);
+        display: block;
+        margin-bottom: 5px;
+    }
+    .filter-group input,
+    .filter-group select {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid var(--sant-border);
+        border-radius: 8px;
+        font-size: 0.9rem;
+        background: white;
+    }
+    .filter-group input:focus,
+    .filter-group select:focus {
+        outline: none;
+        border-color: var(--sant-primary);
+        box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+    }
+    .filter-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    .filter-actions button,
+    .filter-actions a {
+        width: 100%;
+        padding: 10px;
+        font-weight: 700;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+    .filter-actions .btn-search {
+        background: var(--sant-primary);
+        color: white;
+    }
+    .filter-actions .btn-search:hover {
+        background: var(--sant-primary-dark);
+        transform: translateY(-1px);
+    }
+    .filter-actions .btn-reset {
+        background: #f8fafc;
+        color: var(--sant-muted);
+        border: 1px solid var(--sant-border);
+    }
+    .filter-actions .btn-reset:hover {
+        background: #eef2f7;
+    }
+    .results-header {
+        background: var(--sant-surface);
+        border: 1px solid var(--sant-border);
+        border-radius: 12px;
+        padding: 10px 12px;
+        box-shadow: var(--sant-shadow);
+        margin-bottom: 16px;
+        backdrop-filter: blur(6px);
+    }
+    .results-container {
+        height: calc(100vh - 150px);
+        overflow-y: auto;
+        padding-right: 15px;
+    }
+    .results-container::-webkit-scrollbar {
+        width: 8px;
+    }
+    .results-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    .results-container::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 10px;
+    }
+    .results-container::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+    .map-container {
+        height: calc(100vh - 150px);
+        position: sticky;
+        top: 20px;
+    }
+    #map {
+        height: 100%;
+        border-radius: 16px;
+        box-shadow: var(--sant-shadow);
+        border: 1px solid var(--sant-border);
+        overflow: hidden;
+    }
+    .santier-card {
+        border: none;
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        background: #fff;
+        box-shadow: var(--sant-shadow);
+        border-left: 4px solid var(--sant-primary);
+        border: 1px solid var(--sant-border);
+    }
+    .santier-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 26px rgba(15, 23, 42, 0.12);
+        border-color: var(--sant-accent);
+        border-left: 4px solid var(--sant-accent);
+    }
+    .santier-card .card-body {
+        padding: 20px;
+    }
+    .santier-card .card-title {
+        color: var(--sant-ink);
+        font-weight: 800;
+        font-size: 1.1rem;
+        margin-bottom: 12px;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .santier-card .card-text {
+        color: var(--sant-muted);
+        font-size: 0.9rem;
+        line-height: 1.6;
+        margin-bottom: 15px;
+    }
+    .santier-card .santier-details {
+        background: #f8fafc;
+        padding: 15px;
+        border-radius: 12px;
+        margin-bottom: 15px;
+        border: 1px solid var(--sant-border);
+    }
+    .santier-card .santier-details p {
+        font-size: 0.9rem;
+        color: var(--sant-ink);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .santier-card .santier-details i {
+        font-size: 1rem;
+        color: var(--sant-accent);
+    }
+    .santier-card .btn-primary {
+        background: var(--sant-primary) !important;
+        border: none;
+        padding: 10px 20px;
+        font-weight: 700;
+        border-radius: 10px;
+        width: 100%;
+        transition: all 0.3s ease;
+    }
+    .santier-card .btn-primary:hover {
+        background: var(--sant-primary-dark) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 18px rgba(15, 118, 110, 0.35);
+    }
+    .badge-status {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .pagination .page-link {
+        border-radius: 10px;
+        margin: 0 3px;
+        border: 1px solid var(--sant-border);
+        color: var(--sant-muted);
+        font-weight: 700;
+        background: white;
+    }
+    .pagination .page-link:hover {
+        background: #f9fafb;
+        border-color: var(--sant-accent);
+        color: var(--sant-accent);
+    }
+    .pagination .page-item.active .page-link {
+        background: var(--sant-primary);
+        border-color: var(--sant-primary);
+        color: white;
+    }
+</style>
+
+<div class="container-fluid mt-4 px-4 santiere-page">
+    <div class="row">
+        <div class="col-12">
+            <div class="santiere-header d-flex justify-content-between align-items-center">
+            <h1 class="santiere-title">Caută Șantiere</h1>
+            <div class="d-flex gap-2">
+                <form asp-action="Export" method="get" class="d-inline">
+                    <input type="hidden" name="search" value="@ViewBag.Search" />
+                    <input type="hidden" name="judet" value="@ViewBag.Judet" />
+                    <input type="hidden" name="categorie" value="@ViewBag.Categorie" />
+                    <input type="hidden" name="status" value="@ViewBag.Status" />
+                    <input type="hidden" name="sort" value="@ViewBag.Sort" />
+                    <button type="submit" class="btn" style="background: var(--sant-primary); color: white; border: none; border-radius: 10px; font-weight: 700; padding: 10px 14px;">
+                        <i class="bi bi-download"></i> Exportă
+                    </button>
+                </form>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-action="Create" class="btn" style="background: #10b981; color: white; border: none; border-radius: 10px; font-weight: 700; padding: 10px 14px;">
+                        <i class="bi bi-plus-circle"></i> Adaugă Șantier
+                    </a>
+                }
+            </div>
+        </div>
         </div>
     </div>
 
     <div class="row">
-        @foreach (var santier in Model)
-        {
-            <div class="col-md-6 mb-4">
-                <div class="card santier-card">
-                    <div class="card-body">
-                        <h5 class="card-title">@santier.Name</h5>
-                        <p class="card-text text-muted">@(string.IsNullOrEmpty(santier.Description) ? "" : santier.Description.Substring(0, Math.Min(150, santier.Description.Length)) + "...")</p>
-                        
-                        <div class="santier-details">
-                            <p><i class="bi bi-geo-alt"></i> @santier.Judet, @santier.Localitate</p>
-                            <p><i class="bi bi-tag"></i> @santier.Categorie</p>
-                            <p><i class="bi bi-building"></i> @santier.Beneficiar</p>
-                            @if (santier.ValoareEstimata.HasValue)
-                            {
-                                <p><i class="bi bi-cash"></i> @santier.ValoareEstimata.Value.ToString("N0") RON</p>
-                            }
+        <!-- Sidebar Filters -->
+        <div class="col-md-2">
+            <div class="sidebar-filters">
+                <h5>Filtre</h5>
+                <form asp-action="Index" method="get">
+                    <div class="accordion" id="filtersAccordion">
+                        <!-- Stadiu & Dimensiune -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingBasic">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBasic" aria-expanded="true" aria-controls="collapseBasic">
+                                    Stadiu & Dimensiune
+                                </button>
+                            </h2>
+                            <div id="collapseBasic" class="accordion-collapse collapse show" aria-labelledby="headingBasic" data-bs-parent="#filtersAccordion">
+                                <div class="accordion-body">
+                                    <div class="filter-group">
+                                        <label>Stadiu</label>
+                                        <select name="status">
+                                            <option value="">Toate</option>
+                                            <option value="Planificat" selected="@(ViewBag.Status == "Planificat" ? "selected" : null)">Planificat</option>
+                                            <option value="In desfasurare" selected="@(ViewBag.Status == "In desfasurare" ? "selected" : null)">În desfășurare</option>
+                                            <option value="Finalizat" selected="@(ViewBag.Status == "Finalizat" ? "selected" : null)">Finalizat</option>
+                                        </select>
+                                    </div>
+                                    <div class="filter-group">
+                                        <label>Dimensiune</label>
+                                        <select name="dimensiune">
+                                            <option value="">Toate</option>
+                                            <option value="Mic">Mic</option>
+                                            <option value="Mediu">Mediu</option>
+                                            <option value="Mare">Mare</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        
-                        <a asp-action="Details" asp-route-id="@santier.Id" class="btn btn-primary btn-sm">
-                            Vezi detalii
-                        </a>
-                    </div>
-                </div>
-            </div>
-        }
-    </div>
 
-    @if (ViewBag.TotalPages > 1)
-    {
-        <nav aria-label="Page navigation">
-            <ul class="pagination justify-content-center">
-                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                        <!-- Locație -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingLocation">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLocation" aria-expanded="false" aria-controls="collapseLocation">
+                                    Locație
+                                </button>
+                            </h2>
+                            <div id="collapseLocation" class="accordion-collapse collapse" aria-labelledby="headingLocation" data-bs-parent="#filtersAccordion">
+                                <div class="accordion-body">
+                                    <div class="filter-group">
+                                        <label>Zona</label>
+                                        <input type="text" name="zona" placeholder="Zona..." value="@ViewBag.Zona">
+                                    </div>
+                                    <div class="filter-group">
+                                        <label>Județ</label>
+                                        <select name="judet" id="judetSelect">
+                                            <option value="">Toate</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tipuri -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingTypes">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTypes" aria-expanded="false" aria-controls="collapseTypes">
+                                    Tipuri
+                                </button>
+                            </h2>
+                            <div id="collapseTypes" class="accordion-collapse collapse" aria-labelledby="headingTypes" data-bs-parent="#filtersAccordion">
+                                <div class="accordion-body">
+                                    <div class="filter-group">
+                                        <label>Civil</label>
+                                        <select name="civil">
+                                            <option value="">Toate</option>
+                                            <option value="Da">Da</option>
+                                        </select>
+                                    </div>
+                                    <div class="filter-group">
+                                        <label>Industrial</label>
+                                        <select name="industrial">
+                                            <option value="">Toate</option>
+                                            <option value="Da">Da</option>
+                                        </select>
+                                    </div>
+                                    <div class="filter-group">
+                                        <label>Infrastructura</label>
+                                        <select name="infrastructura">
+                                            <option value="">Toate</option>
+                                            <option value="Da">Da</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Altele -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingOther">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOther" aria-expanded="false" aria-controls="collapseOther">
+                                    Altele
+                                </button>
+                            </h2>
+                            <div id="collapseOther" class="accordion-collapse collapse" aria-labelledby="headingOther" data-bs-parent="#filtersAccordion">
+                                <div class="accordion-body">
+                                    <div class="filter-group">
+                                        <label>Solicitari</label>
+                                        <input type="text" name="solicitari" placeholder="Solicitari..." value="@ViewBag.Solicitari">
+                                    </div>
+                                    <div class="filter-group">
+                                        <label>Data</label>
+                                        <input type="date" name="data" value="@ViewBag.Data">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="filter-actions">
+                        <button type="submit" class="btn-search">Caută</button>
+                        <a asp-action="Index" class="btn-reset">Reset</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="col-md-5">
+            <div class="results-container">
+                <div class="results-header d-flex justify-content-between align-items-center gap-2">
+                    <span>Găsite: <strong>@ViewBag.TotalCount</strong> șantiere</span>
+                    <form method="get" asp-action="Index" style="margin: 0; display: flex; gap: 10px; align-items: center;">
+                        <input type="hidden" name="search" value="@ViewBag.Search" />
+                        <input type="hidden" name="judet" value="@ViewBag.Judet" />
+                        <input type="hidden" name="categorie" value="@ViewBag.Categorie" />
+                        <input type="hidden" name="status" value="@ViewBag.Status" />
+                        <select class="form-select" style="width: auto; max-width: 200px; border-radius: 10px; border-color: var(--sant-border);" name="sort" onchange="this.form.submit();">
+                            <option value="">Sortare...</option>
+                            <option value="name-asc" selected="@(ViewBag.Sort == "name-asc" ? "selected" : null)">Nume A-Z</option>
+                            <option value="name-desc" selected="@(ViewBag.Sort == "name-desc" ? "selected" : null)">Nume Z-A</option>
+                            <option value="date-desc" selected="@(ViewBag.Sort == "date-desc" ? "selected" : null)">Cel mai nou</option>
+                            <option value="date-asc" selected="@(ViewBag.Sort == "date-asc" ? "selected" : null)">Cel mai vechi</option>
+                            <option value="price-desc" selected="@(ViewBag.Sort == "price-desc" ? "selected" : null)">Preț mare</option>
+                            <option value="price-asc" selected="@(ViewBag.Sort == "price-asc" ? "selected" : null)">Preț mic</option>
+                        </select>
+                    </form>
+                </div>
+                @foreach (var santier in Model)
                 {
-                    <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
-                        <a class="page-link" asp-action="Index" 
-                           asp-route-page="@i"
-                           asp-route-search="@ViewBag.Search"
-                           asp-route-judet="@ViewBag.Judet"
-                           asp-route-categorie="@ViewBag.Categorie">
-                            @i
-                        </a>
-                    </li>
+                    <div class="card santier-card mb-3 position-relative">
+                        @if (!string.IsNullOrEmpty(santier.Status))
+                        {
+                            var badgeClass = santier.Status switch {
+                                "In desfasurare" => "bg-success",
+                                "Finalizat" => "bg-secondary",
+                                "Planificat" => "bg-warning text-dark",
+                                _ => "bg-info"
+                            };
+                            <span class="badge-status @badgeClass">@santier.Status</span>
+                        }
+                        <div class="card-body">
+                            <h5 class="card-title">@santier.Name</h5>
+                            <p class="card-text">
+                                @(string.IsNullOrEmpty(santier.Description) ? "Fără descriere disponibilă" : 
+                                  santier.Description.Substring(0, Math.Min(120, santier.Description.Length)) + "...")
+                            </p>
+                            
+                            <div class="santier-details">
+                                <p class="mb-2">
+                                    <i class="bi bi-geo-alt-fill text-danger"></i>
+                                    <strong>@santier.Judet</strong>, @santier.Localitate
+                                </p>
+                                <p class="mb-2">
+                                    <i class="bi bi-tag-fill text-info"></i>
+                                    @santier.Categorie
+                                </p>
+                                <p class="mb-2">
+                                    <i class="bi bi-building text-success"></i>
+                                    @santier.Beneficiar
+                                </p>
+                                @if (santier.ValoareEstimata.HasValue)
+                                {
+                                    <p class="mb-0">
+                                        <i class="bi bi-cash-stack text-warning"></i>
+                                        <strong>@santier.ValoareEstimata.Value.ToString("N0") RON</strong>
+                                    </p>
+                                }
+                            </div>
+                            
+                            <a asp-action="Details" asp-route-id="@santier.Id" class="btn btn-primary mt-2">
+                                Vezi detalii <i class="bi bi-arrow-right-circle"></i>
+                            </a>
+                        </div>
+                    </div>
                 }
-            </ul>
-        </nav>
-    }
+
+                @if (ViewBag.TotalPages > 1)
+                {
+                    <nav aria-label="Page navigation" class="mt-4 mb-4">
+                        <ul class="pagination justify-content-center">
+                            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                            {
+                                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                    <a class="page-link" asp-action="Index" 
+                                       asp-route-page="@i"
+                                       asp-route-search="@ViewBag.Search"
+                                       asp-route-judet="@ViewBag.Judet"
+                                       asp-route-categorie="@ViewBag.Categorie"
+                                       asp-route-status="@ViewBag.Status">
+                                        @i
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                }
+            </div>
+        </div>
+
+        <!-- Map -->
+        <div class="col-md-5">
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+        </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
+<!-- Leaflet CSS and JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""></script>
+
 <script>
+    let map = null;
+    let markers = [];
+
     // Load județe
     fetch('@Url.Action("GetJudete", "Santiere")')
         .then(response => response.json())
@@ -116,5 +592,80 @@
                 select.add(option);
             });
         });
+
+    // Initialize map immediately on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize map centered on Romania
+        map = L.map('map').setView([45.9432, 24.9668], 7);
+
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 18,
+        }).addTo(map);
+
+        // Load santiere markers
+        loadMapMarkers();
+    });
+
+    // Load markers on map
+    function loadMapMarkers() {
+        const params = new URLSearchParams({
+            search: '@ViewBag.Search' || '',
+            judet: '@ViewBag.Judet' || '',
+            categorie: '@ViewBag.Categorie' || '',
+            status: '@ViewBag.Status' || ''
+        });
+
+        fetch('@Url.Action("GetSantiereMap", "Santiere")?' + params)
+            .then(response => response.json())
+            .then(santiere => {
+                // Clear existing markers
+                markers.forEach(marker => marker.remove());
+                markers = [];
+
+                // Add markers for each santier with custom styling
+                santiere.forEach(santier => {
+                    const marker = L.marker([santier.latitude, santier.longitude])
+                        .bindPopup(`
+                            <div style="min-width: 220px;">
+                                <h6 style="margin-bottom: 10px; font-weight: bold; color: #0d6efd;">${santier.name}</h6>
+                                <p style="margin: 5px 0; font-size: 0.9em;">
+                                    <i class="bi bi-geo-alt text-danger"></i> ${santier.judet}, ${santier.localitate}
+                                </p>
+                                <p style="margin: 5px 0; font-size: 0.9em;">
+                                    <i class="bi bi-tag text-info"></i> ${santier.categorie}
+                                </p>
+                                <p style="margin: 5px 0; font-size: 0.9em;">
+                                    <i class="bi bi-building text-success"></i> ${santier.beneficiar}
+                                </p>
+                                ${santier.valoareEstimata ? `<p style="margin: 5px 0; font-size: 0.9em;">
+                                    <i class="bi bi-cash text-warning"></i> ${santier.valoareEstimata.toLocaleString('ro-RO')} RON
+                                </p>` : ''}
+                                <a href="@Url.Action("Details", "Santiere")/${santier.id}" 
+                                   class="btn btn-primary btn-sm mt-2" style="width: 100%;">
+                                    Vezi detalii <i class="bi bi-arrow-right"></i>
+                                </a>
+                            </div>
+                        `);
+                    
+                    marker.addTo(map);
+                    markers.push(marker);
+                });
+
+                // Fit map to markers bounds if there are any
+                if (markers.length > 0) {
+                    const group = new L.featureGroup(markers);
+                    map.fitBounds(group.getBounds().pad(0.1));
+                } else {
+                    // Reset to Romania view if no markers
+                    map.setView([45.9432, 24.9668], 7);
+                }
+            })
+            .catch(error => console.error('Error loading map markers:', error));
+    }
 </script>
 }
+
+
+

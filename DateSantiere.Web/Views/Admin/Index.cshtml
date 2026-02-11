@@ -1,0 +1,133 @@
+@{
+    ViewData["Title"] = "Panou Admin";
+    var adminType = ViewBag.AdminType as string;
+    var permissions = ViewBag.Permissions as DateSantiere.Models.AdminPermissions;
+}
+
+<div style="padding: 40px 0; background: #e5e7eb; min-height: calc(100vh - 200px);">
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h1 style="color: #374151; margin: 0;">Panou Administrare</h1>
+            @if (!string.IsNullOrEmpty(adminType))
+            {
+                <span style="padding: 8px 16px; background: #f59e0b; color: white; border-radius: 8px; font-weight: 600;">
+                    @adminType
+                </span>
+            }
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+            @if (adminType == "SuperAdmin")
+            {
+                <a href="/Admin/Applications" style="background: white; padding: 30px; border-radius: 12px; text-decoration: none; border: 1px solid #e5e7eb; transition: all 0.3s;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                        <i class="bi bi-gear-wide" style="font-size: 32px; color: #06b6d4;"></i>
+                        <h3 style="margin: 0; color: #374151; font-size: 20px;">Aplicații</h3>
+                    </div>
+                    <p style="margin: 0; color: #6b7280; font-size: 14px;">Execută scripturi și aplicații</p>
+                </a>
+            }
+
+            @if (permissions?.CanManageSantiere == true)
+            {
+                <a href="/Admin/Santiere" style="background: white; padding: 30px; border-radius: 12px; text-decoration: none; border: 1px solid #e5e7eb; transition: all 0.3s;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                        <i class="bi bi-building" style="font-size: 32px; color: #f59e0b;"></i>
+                        <h3 style="margin: 0; color: #374151; font-size: 20px;">Șantiere</h3>
+                    </div>
+                    <p style="margin: 0; color: #6b7280; font-size: 14px;">Gestionează toate șantierele din platformă</p>
+                </a>
+            }
+            
+            @if (permissions?.CanManageUsers == true)
+            {
+                <a href="/Admin/Users" style="background: white; padding: 30px; border-radius: 12px; text-decoration: none; border: 1px solid #e5e7eb; transition: all 0.3s;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                        <i class="bi bi-people" style="font-size: 32px; color: #3b82f6;"></i>
+                        <h3 style="margin: 0; color: #374151; font-size: 20px;">Utilizatori</h3>
+                    </div>
+                    <p style="margin: 0; color: #6b7280; font-size: 14px;">Administrează utilizatorii și abonamentele</p>
+                </a>
+            }
+            
+            @if (permissions?.CanManageAdmins == true)
+            {
+                <a href="/Admin/Admins" style="background: white; padding: 30px; border-radius: 12px; text-decoration: none; border: 1px solid #e5e7eb; transition: all 0.3s;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                        <i class="bi bi-shield-check" style="font-size: 32px; color: #8b5cf6;"></i>
+                        <h3 style="margin: 0; color: #374151; font-size: 20px;">Administratori</h3>
+                    </div>
+                    <p style="margin: 0; color: #6b7280; font-size: 14px;">Gestionează echipa de administratori</p>
+                </a>
+            }
+            
+            @if (permissions?.CanManagePayments == true)
+            {
+                <a href="/Admin/Payments" style="background: white; padding: 30px; border-radius: 12px; text-decoration: none; border: 1px solid #e5e7eb; transition: all 0.3s;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                        <i class="bi bi-credit-card" style="font-size: 32px; color: #10b981;"></i>
+                        <h3 style="margin: 0; color: #374151; font-size: 20px;">Plăți</h3>
+                    </div>
+                    <p style="margin: 0; color: #6b7280; font-size: 14px;">Monitorizează tranzacții și abonamente</p>
+                </a>
+
+                <a href="/Admin/Prices" style="background: white; padding: 30px; border-radius: 12px; text-decoration: none; border: 1px solid #e5e7eb; transition: all 0.3s;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                        <i class="bi bi-tags" style="font-size: 32px; color: #f59e0b;"></i>
+                        <h3 style="margin: 0; color: #374151; font-size: 20px;">Prețuri</h3>
+                    </div>
+                    <p style="margin: 0; color: #6b7280; font-size: 14px;">Gestionează prețuri pentru deblocări și abonamente</p>
+                </a>
+            }
+            
+            @if (permissions?.CanViewReports == true)
+            {
+                <a href="/Admin/Reports" style="background: white; padding: 30px; border-radius: 12px; text-decoration: none; border: 1px solid #e5e7eb; transition: all 0.3s;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                        <i class="bi bi-bar-chart" style="font-size: 32px; color: #ef4444;"></i>
+                        <h3 style="margin: 0; color: #374151; font-size: 20px;">Rapoarte</h3>
+                    </div>
+                    <p style="margin: 0; color: #6b7280; font-size: 14px;">Statistici și rapoarte detaliate</p>
+                </a>
+            }
+            
+            @if (adminType == "SuperAdmin")
+            {
+                <a href="/Admin/Settings" style="background: white; padding: 30px; border-radius: 12px; text-decoration: none; border: 1px solid #e5e7eb; transition: all 0.3s;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                        <i class="bi bi-key" style="font-size: 32px; color: #6b7280;"></i>
+                        <h3 style="margin: 0; color: #374151; font-size: 20px;">API Keys</h3>
+                    </div>
+                    <p style="margin: 0; color: #6b7280; font-size: 14px;">Gestionează chei API și integrări third-party</p>
+                </a>
+            }
+            
+            @if (permissions?.CanManageSettings == true)
+            {
+                <a href="/Admin/Settings" style="background: white; padding: 30px; border-radius: 12px; text-decoration: none; border: 1px solid #e5e7eb; transition: all 0.3s;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                        <i class="bi bi-gear" style="font-size: 32px; color: #6b7280;"></i>
+                        <h3 style="margin: 0; color: #374151; font-size: 20px;">Setări</h3>
+                    </div>
+                    <p style="margin: 0; color: #6b7280; font-size: 14px;">Configurări generale ale platformei</p>
+                </a>
+            }
+            
+            @if (permissions?.CanViewLogs == true)
+            {
+                <a href="/Admin/Logs" style="background: white; padding: 30px; border-radius: 12px; text-decoration: none; border: 1px solid #e5e7eb; transition: all 0.3s;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                        <i class="bi bi-file-text" style="font-size: 32px; color: #f97316;"></i>
+                        <h3 style="margin: 0; color: #374151; font-size: 20px;">Loguri</h3>
+                    </div>
+                    <p style="margin: 0; color: #6b7280; font-size: 14px;">Istoric activități și evenimente sistem</p>
+                </a>
+            }
+        </div>
+        
+        <div style="margin-top: 40px; padding: 20px; background: #dbeafe; border-left: 4px solid #3b82f6; border-radius: 8px;">
+            <h4 style="margin: 0 0 10px 0; color: #1e40af;">Bine ai venit în panoul de administrare!</h4>
+            <p style="margin: 0; color: #1e3a8a;">De aici poți gestiona aspectele platformei DateSantiere conform permisiunilor tale de @adminType.</p>
+        </div>
+    </div>
+</div>

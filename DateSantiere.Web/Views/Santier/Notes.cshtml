@@ -1,0 +1,64 @@
+@model IEnumerable<DateSantiere.Models.SantierNote>
+
+@{
+    ViewData["Title"] = "Note";
+}
+
+<div class="container my-5">
+    <h2><i class="bi bi-sticky"></i> Notele Mele</h2>
+    <p class="text-muted">Toate notele și reminder-ele tale pentru șantiere</p>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Nu ai note create încă. Vizitează un șantier pentru a adăuga note!
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Șantier</th>
+                        <th>Notă</th>
+                        <th>Alarmă</th>
+                        <th>Creat</th>
+                        <th>Acțiuni</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var note in Model)
+                    {
+                        <tr>
+                            <td>
+                                <a href="@Url.Action("Details", "Santiere", new { id = note.SantierId })">
+                                    @note.Santier?.Name
+                                </a>
+                            </td>
+                            <td>@note.Nota</td>
+                            <td>
+                                @if (note.Alarma.HasValue)
+                                {
+                                    <span class="badge bg-warning text-dark">
+                                        @note.Alarma.Value.ToString("dd.MM.yyyy HH:mm")
+                                    </span>
+                                }
+                            </td>
+                            <td>
+                                <small class="text-muted">@note.CreatedAt.ToString("dd.MM.yyyy HH:mm")</small>
+                            </td>
+                            <td>
+                                <a href="@Url.Action("DeleteNota", "Santier", new { id = note.SantierId })" 
+                                   onclick="return confirm('Elimina nota de pe santier?');" 
+                                   class="btn btn-sm btn-danger">
+                                    <i class="bi bi-trash"></i> Șterge
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

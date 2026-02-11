@@ -1,0 +1,35 @@
+@model DateSantiere.Models.PaymentPrice
+@{
+    ViewData["Title"] = "Edit Price";
+}
+
+<h2>Edit Price</h2>
+<form method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <div class="mb-3">
+        <label class="form-label">Name</label>
+        <input class="form-control" asp-for="Name" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Amount (cents)</label>
+        <input class="form-control" asp-for="AmountCents" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Billing Interval</label>
+        <select class="form-select" asp-for="BillingInterval">
+            <option value="one-time">One-time</option>
+            <option value="monthly">Monthly</option>
+            <option value="annual">Annual</option>
+        </select>
+    </div>
+    <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" asp-for="IsForSantier" />
+        <label class="form-check-label">Is for Santier</label>
+    </div>
+    <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" asp-for="IsActive" />
+        <label class="form-check-label">Is Active</label>
+    </div>
+    <button class="btn btn-primary" type="submit">Save</button>
+</form>

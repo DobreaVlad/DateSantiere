@@ -2,7 +2,36 @@
     ViewData["Title"] = "DateSantiere - Gaseste santierele tale";
 }
 
-<section class="hero">
+<style>
+    .hero-animated {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7));
+    }
+    
+    .hero-animated::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1920&q=80') center/cover;
+        animation: zoomBackground 20s ease-in-out infinite alternate;
+        z-index: -1;
+    }
+    
+    @@keyframes zoomBackground {
+        0% {
+            transform: scale(1);
+        }
+        100% {
+            transform: scale(1.1);
+        }
+    }
+</style>
+
+<section class="hero hero-animated">
     <div class="container">
         <h1 class="display-4">"Drumul spre succes e întotdeauna în construcție"</h1>
         <p class="lead">Caută mii de șantiere și proiecte din toată țara</p>

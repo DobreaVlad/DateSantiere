@@ -5,6 +5,14 @@
 }
 
 <div class="container mt-5">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <div class="row">
         <div class="col-md-3">
             <div class="card">
@@ -37,96 +45,162 @@
                     <h4>Informații Profil</h4>
                 </div>
                 <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <strong>Prenume:</strong>
-                        </div>
-                        <div class="col-md-8">
-                            @(Model.FirstName ?? "Nu este setat")
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <strong>Nume:</strong>
-                        </div>
-                        <div class="col-md-8">
-                            @(Model.LastName ?? "Nu este setat")
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <strong>Email:</strong>
-                        </div>
-                        <div class="col-md-8">
-                            @Model.Email
-                            @if (Model.EmailConfirmed)
-                            {
-                                <span class="badge bg-success">Verificat</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-warning">Neverificat</span>
-                            }
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <strong>Companie:</strong>
-                        </div>
-                        <div class="col-md-8">
-                            @(Model.Company ?? "Nu este setat")
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <strong>CUI:</strong>
-                        </div>
-                        <div class="col-md-8">
-                            @(Model.CUI ?? "Nu este setat")
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <strong>Membru din:</strong>
-                        </div>
-                        <div class="col-md-8">
-                            @Model.CreatedAt.ToString("dd MMMM yyyy")
-                        </div>
-                    </div>
-                    
-                    @if (!string.IsNullOrEmpty(Model.SubscriptionPlan))
-                    {
+                    <form method="post" asp-action="Profile">
                         <div class="row mb-3">
                             <div class="col-md-4">
-                                <strong>Plan abonament:</strong>
+                                <label class="form-label"><strong>Prenume:</strong></label>
                             </div>
                             <div class="col-md-8">
-                                <span class="badge bg-primary">@Model.SubscriptionPlan</span>
-                                @if (Model.SubscriptionEndDate.HasValue)
+                                <input type="text" class="form-control" name="FirstName" value="@(Model.FirstName ?? "")" placeholder="Prenumele tău">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label"><strong>Nume:</strong></label>
+                            </div>
+                            <div class="col-md-8">
+                                <input type="text" class="form-control" name="LastName" value="@(Model.LastName ?? "")" placeholder="Numele de familie">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>Email:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                <input type="email" class="form-control" value="@Model.Email" disabled>
+                                @if (Model.EmailConfirmed)
                                 {
-                                    <small class="text-muted">
-                                        (valabil până la @Model.SubscriptionEndDate.Value.ToString("dd.MM.yyyy"))
-                                    </small>
+                                    <span class="badge bg-success">Verificat</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning">Neverificat</span>
                                 }
                             </div>
                         </div>
-                    }
-                    
-                    <hr>
-                    
-                    <div class="mt-3">
-                        <button class="btn btn-primary">
-                            <i class="bi bi-pencil"></i> Editează Profil
-                        </button>
-                        <button class="btn btn-outline-secondary">
-                            <i class="bi bi-key"></i> Schimbă Parola
-                        </button>
-                    </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label"><strong>Companie:</strong></label>
+                            </div>
+                            <div class="col-md-8">
+                                <input type="text" class="form-control" name="Company" value="@(Model.Company ?? "")" placeholder="Denumirea companiei">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label"><strong>CUI:</strong></label>
+                            </div>
+                            <div class="col-md-8">
+                                <input type="text" class="form-control" name="CUI" value="@(Model.CUI ?? "")" placeholder="Codul Unic de Identificare">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>Membru din:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                <input type="text" class="form-control" value="@Model.CreatedAt.ToString("dd MMMM yyyy")" disabled>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>Tip cont:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                @{
+                                    var badgeClass = Model.AccountType switch
+                                    {
+                                        "Free" => "bg-secondary",
+                                        "Basic" => "bg-info",
+                                        "Premium" => "bg-warning",
+                                        "Enterprise" => "bg-success",
+                                        _ => "bg-secondary"
+                                    };
+                                }
+                                <span class="badge @badgeClass">@Model.AccountType</span>
+                                <a asp-controller="Home" asp-action="Pricing" class="btn btn-sm btn-outline-primary ms-2">
+                                    <i class="bi bi-arrow-up-circle"></i> Upgradează
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>Limite utilizare:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="mb-2">
+                                    <small class="text-muted">Căutări lunare:</small>
+                                    <div class="progress" style="height: 20px;">
+                                        @{
+                                            var searchPercentage = Model.MonthlySearchLimit > 0 
+                                                ? (Model.CurrentMonthSearches * 100.0 / Model.MonthlySearchLimit) 
+                                                : 0;
+                                        }
+                                        <div class="progress-bar" role="progressbar" 
+                                             style="width: @searchPercentage%" 
+                                             aria-valuenow="@Model.CurrentMonthSearches" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="@Model.MonthlySearchLimit">
+                                            @Model.CurrentMonthSearches / @(Model.MonthlySearchLimit == -1 ? "∞" : Model.MonthlySearchLimit.ToString())
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <small class="text-muted">Exporturi lunare:</small>
+                                    <div class="progress" style="height: 20px;">
+                                        @{
+                                            var exportPercentage = Model.MonthlyExportLimit > 0 
+                                                ? (Model.CurrentMonthExports * 100.0 / Model.MonthlyExportLimit) 
+                                                : 0;
+                                        }
+                                        <div class="progress-bar bg-success" role="progressbar" 
+                                             style="width: @exportPercentage%" 
+                                             aria-valuenow="@Model.CurrentMonthExports" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="@Model.MonthlyExportLimit">
+                                            @Model.CurrentMonthExports / @(Model.MonthlyExportLimit == -1 ? "∞" : Model.MonthlyExportLimit.ToString())
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        @if (!string.IsNullOrEmpty(Model.SubscriptionPlan))
+                        {
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <strong>Plan abonament:</strong>
+                                </div>
+                                <div class="col-md-8">
+                                    <span class="badge bg-primary">@Model.SubscriptionPlan</span>
+                                    @if (Model.SubscriptionEndDate.HasValue)
+                                    {
+                                        <small class="text-muted">
+                                            (valabil până la @Model.SubscriptionEndDate.Value.ToString("dd.MM.yyyy"))
+                                        </small>
+                                    }
+                                </div>
+                            </div>
+                        }
+                        
+                        <hr>
+                        
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Salvează Modificări
+                            </button>
+                            <a href="@Url.Action("Index", "Home")" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> Anulează
+                            </a>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
