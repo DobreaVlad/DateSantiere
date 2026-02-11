@@ -101,17 +101,23 @@ jobs:
             echo "Certificatul pentru db.adebisi.ro nu a fost gasit. Site-ul a ramas pe HTTP."
           fi
 
-          ln -sf /etc/nginx/sites-available/db.adebisi.ro /etc/nginx/sites-enabled/db.adebisi.ro
-          nginx -t
-          systemctl restart "$PHP_FPM_SERVICE"
-          if ! systemctl reload nginx; then
-            echo "Nginx reload failed, trying full restart..."
-            if ! systemctl restart nginx; then
-              echo "Nginx failed to start. Diagnostics:"
-              systemctl status nginx --no-pager -l || true
-              journalctl -xeu nginx.service --no-pager | tail -n 120 || true
-              ss -ltnp | grep -E ':(80|443)\s' || true
-              exit 1
+          if ss -ltnp | grep -qE ':(80|443)\s.*apache2'; then
+            echo "Apache2 is already listening on 80/443. Skipping Nginx reload/restart to avoid outage."
+            systemctl status apache2 --no-pager -l || true
+            ss -ltnp | grep -E ':(80|443)\s' || true
+          else
+            ln -sf /etc/nginx/sites-available/db.adebisi.ro /etc/nginx/sites-enabled/db.adebisi.ro
+            nginx -t
+            systemctl restart "$PHP_FPM_SERVICE"
+            if ! systemctl reload nginx; then
+              echo "Nginx reload failed, trying full restart..."
+              if ! systemctl restart nginx; then
+                echo "Nginx failed to start. Diagnostics:"
+                systemctl status nginx --no-pager -l || true
+                journalctl -xeu nginx.service --no-pager | tail -n 120 || true
+                ss -ltnp | grep -E ':(80|443)\s' || true
+                exit 1
+              fi
             fi
           fi
 
